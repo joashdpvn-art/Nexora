@@ -101,13 +101,12 @@ export function FocusMode({
   const handleComplete = () => {
     if (!currentTask || isTransitioningComplete) return;
 
-    // Premium visual completion transition (TASK COMPLETE ✓) without childish confetti
     setIsTransitioningComplete(true);
     setIsRunning(false);
 
     setTimeout(() => {
       onCompleteTask(currentTask.id);
-    }, 1100);
+    }, 1000);
   };
 
   const handleSkip = () => {
@@ -134,7 +133,7 @@ export function FocusMode({
   const overallProgressPercent = Math.round((completedCount / plan.tasks.length) * 100);
 
   // Circular progress calculations for SVG ring
-  const circleRadius = 140;
+  const circleRadius = 135;
   const circleCircumference = 2 * Math.PI * circleRadius;
   const strokeDashoffset = circleCircumference - (progressPercent / 100) * circleCircumference;
 
@@ -145,10 +144,10 @@ export function FocusMode({
       }`}
     >
       {/* Top Bar Navigation */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={onExitFocus}
-          className="flex items-center space-x-2 px-3 py-1.5 rounded-lg surface-obsidian text-slate-400 hover:text-white transition text-xs font-mono"
+          className="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg surface-obsidian text-slate-400 hover:text-white transition text-xs font-mono"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>RETURN TO COMMAND CENTER</span>
@@ -175,8 +174,8 @@ export function FocusMode({
 
       {/* Main Focus Centerpiece */}
       <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto w-full text-center py-4">
-        {/* Status Indicator */}
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-mono mb-4">
+        {/* Subtle System Status Pill */}
+        <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-mono mb-4">
           <span className="relative flex h-2 w-2">
             <span
               className={`absolute inline-flex h-full w-full rounded-full bg-brand-cyan opacity-75 ${
@@ -187,14 +186,14 @@ export function FocusMode({
           </span>
           <span className="tracking-widest uppercase">
             {isTransitioningComplete
-              ? "OBJECTIVE SECURED"
+              ? "OBJECTIVE COMPLETE"
               : isRunning
               ? "FOCUS ACTIVE"
               : "SESSION PAUSED"}
           </span>
         </div>
 
-        {/* Current Objective Heading */}
+        {/* Center Objective Hierarchy */}
         <div className="space-y-1 mb-6">
           <span className="text-[11px] font-mono tracking-widest uppercase text-slate-500">
             OBJECTIVE {currentIndex + 1} OF {plan.tasks.length}
@@ -209,40 +208,38 @@ export function FocusMode({
           )}
         </div>
 
-        {/* Premium Circular Timer System */}
+        {/* Restrained Circular Countdown Timer */}
         <div className="relative my-4 flex items-center justify-center">
           {/* Subtle Ambient Radial Light */}
           <div className="absolute w-80 h-80 rounded-full bg-brand-cyan/5 blur-3xl -z-10 pointer-events-none" />
 
-          {/* SVG Circular Progress Ring */}
+          {/* SVG Circular Ring */}
           <svg className="w-72 h-72 sm:w-80 sm:h-80 -rotate-90 transform" viewBox="0 0 320 320">
-            {/* Background Track */}
             <circle
               cx="160"
               cy="160"
               r={circleRadius}
               className="stroke-white/[0.04]"
-              strokeWidth="6"
+              strokeWidth="5"
               fill="transparent"
             />
-            {/* Active Telemetry Ring */}
             <circle
               cx="160"
               cy="160"
               r={circleRadius}
               className="stroke-brand-cyan transition-all duration-700 ease-linear"
-              strokeWidth="6"
+              strokeWidth="5"
               strokeDasharray={circleCircumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
               fill="transparent"
               style={{
-                filter: "drop-shadow(0 0 8px rgba(56, 189, 248, 0.4))",
+                filter: "drop-shadow(0 0 8px rgba(56, 189, 248, 0.35))",
               }}
             />
           </svg>
 
-          {/* Center Digital Display */}
+          {/* Digital Timer Content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             {isTransitioningComplete ? (
               <div className="flex flex-col items-center animate-in zoom-in duration-300">
@@ -269,11 +266,11 @@ export function FocusMode({
           </div>
         </div>
 
-        {/* Subtask Checkpoints */}
+        {/* Focal Checkpoints */}
         {currentTask?.subtasks && currentTask.subtasks.length > 0 && !isTransitioningComplete && (
           <div className="w-full max-w-md bg-obsidian-900 border border-white/[0.06] rounded-xl p-4 my-3 text-left">
             <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block mb-2">
-              TARGET CHECKPOINTS
+              ACTIVE CHECKPOINTS
             </span>
             <div className="space-y-2">
               {currentTask.subtasks.map((st, i) => {
@@ -308,7 +305,7 @@ export function FocusMode({
           </div>
         )}
 
-        {/* Controls: PAUSE / COMPLETE / SKIP */}
+        {/* Primary Controls */}
         <div className="flex flex-wrap items-center justify-center gap-3 my-4">
           <button
             type="button"
@@ -336,7 +333,7 @@ export function FocusMode({
             className="px-6 py-2.5 rounded-xl font-mono font-bold text-xs tracking-wider bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center space-x-2 shadow-telemetry-emerald transition duration-200"
           >
             <Check className="w-4 h-4 stroke-[2.5]" />
-            <span>COMPLETE TASK</span>
+            <span>COMPLETE</span>
           </button>
 
           <button

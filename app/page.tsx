@@ -22,7 +22,6 @@ export default function NexoraApp() {
   const [session, setSession] = useState<SessionState>(initialSessionState);
   const [isMounted, setIsMounted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingStep, setProcessingStep] = useState<"received" | "understanding" | "synthesizing">("received");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [notification, setNotification] = useState<{ text: string; type?: "info" | "success" } | null>(null);
 
@@ -48,12 +47,11 @@ export default function NexoraApp() {
     }
   }, [session, isMounted]);
 
-  // Command submission handler with intelligent micro-interaction steps
+  // Command submission handler with cinematic reasoning cadence
   const handleExecuteCommand = async (command: string) => {
     if (!command.trim() || isProcessing) return;
 
     setIsProcessing(true);
-    setProcessingStep("received");
 
     const userMessage = {
       id: `msg-${Date.now()}-user`,
@@ -70,21 +68,11 @@ export default function NexoraApp() {
       history: [userMessage, ...prev.history],
     }));
 
-    // Step 1 -> Step 2
-    setTimeout(() => {
-      setProcessingStep("understanding");
-    }, 280);
-
-    // Step 2 -> Step 3
-    setTimeout(() => {
-      setProcessingStep("synthesizing");
-    }, 600);
-
     try {
-      // Process with slight natural cadence to allow micro-interaction to be visible
+      // Allow the 5-stage reasoning sequence to play smoothly
       const [res] = await Promise.all([
         processCommand(command, session),
-        new Promise((resolve) => setTimeout(resolve, 850)),
+        new Promise((resolve) => setTimeout(resolve, 1350)),
       ]);
 
       const { action } = res;
@@ -459,7 +447,6 @@ export default function NexoraApp() {
             <CommandInput
               onSubmit={handleExecuteCommand}
               isProcessing={isProcessing}
-              processingStep={processingStep}
               hasExistingPlan={Boolean(session.plan)}
               lastQuery={session.lastQuery}
               completedCount={session.completedTaskIds.length}

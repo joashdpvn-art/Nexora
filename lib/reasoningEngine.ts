@@ -187,24 +187,23 @@ export function analyzeQuery(query: string): {
   // Build reasoning notes
   if (subjects.length >= 2) {
     reasoning.push(
-      `${subjects[0].name} is prioritized first because its deadline (${subjects[0].deadline}) requires immediate mastery.`
+      `${subjects[0].name} comes first because its deadline (${subjects[0].deadline}) is closest and requires uninterrupted cognitive effort.`
     );
     reasoning.push(
-      `Your available time tonight is bounded to ${availableMinutes} minutes, demanding high-intensity blocking.`
+      `Your available time tonight is bounded to ${availableMinutes} minutes. We are eliminating low-value friction and protecting deep focus.`
     );
     reasoning.push(
-      `${subjects[1].name} (${subjects[1].deadline}) is initiated afterwards to make structural progress without causing cognitive fatigue.`
+      `${subjects[1].name} (${subjects[1].deadline}) follows immediately after a restorative reset to lock down structural momentum before Friday.`
     );
   } else if (subjects.length === 1) {
     reasoning.push(
-      `Allocated focused intervals for ${subjects[0].name} to maximize retention within your ${availableMinutes} min window.`
+      `${subjects[0].name} receives full concentration to secure mastery within your ${availableMinutes} min window.`
     );
-    reasoning.push(`Integrated restorative checkpoints to avoid late-night burnout.`);
+    reasoning.push(`Integrated a 10-minute restorative reset to prevent late-evening fatigue.`);
   }
 
   // Intelligent schedule generation based on available minutes
   if (availableMinutes >= 90 && subjects.length >= 2) {
-    // E.g. Standard 120m scenario: 80m urgent + 10m break + 20m second task + 10m review = 120m
     const primaryDuration = Math.round(availableMinutes * 0.65);
     const breakDuration = 10;
     const secondaryDuration = Math.round(availableMinutes * 0.20);
@@ -217,7 +216,8 @@ export function analyzeQuery(query: string): {
       duration: primaryDuration,
       priority: "high",
       deadline: subjects[0].deadline,
-      reason: `Immediate milestone (${subjects[0].deadline}). Needs dedicated practice block.`,
+      reason: `Deadline is closest (${subjects[0].deadline}). High cognitive demand requires protected focus.`,
+      successMetric: "Mastered critical theorem sets and passed timed self-test without checking notes",
       category: "study",
       completed: false,
       subtasks: [
@@ -235,6 +235,7 @@ export function analyzeQuery(query: string): {
       priority: "low",
       deadline: "Scheduled Interval",
       reason: "Restores cognitive baseline and consolidates memory before context switch.",
+      successMetric: "Cognitive baseline restored; eyes rested away from monitor",
       category: "break",
       completed: false,
       subtasks: ["Hydrate", "Eye rest away from screen", "Brief stretch"],
@@ -248,6 +249,7 @@ export function analyzeQuery(query: string): {
       priority: "medium",
       deadline: subjects[1].deadline,
       reason: `Due ${subjects[1].deadline}. Early schema breakdown eliminates deadline dread.`,
+      successMetric: "Entity relationships defined and starter scaffolding drafted",
       category: "assignment",
       completed: false,
       subtasks: [
@@ -266,13 +268,13 @@ export function analyzeQuery(query: string): {
         priority: "low",
         deadline: "End of session",
         reason: "Locks in gains and prevents morning scramble.",
+        successMetric: "Work cataloged, checklist clear, materials ready for morning",
         category: "review",
         completed: false,
         subtasks: ["Review formula cheat-sheet", "Pack bag for tomorrow morning"],
       });
     }
   } else if (subjects.length === 1) {
-    // Single subject breakdown
     const mainDur = Math.max(20, availableMinutes - 15);
     const wrapDur = availableMinutes - mainDur;
 
@@ -284,6 +286,7 @@ export function analyzeQuery(query: string): {
       priority: "high",
       deadline: subjects[0].deadline,
       reason: "Targeted deep-work focus block.",
+      successMetric: "Core practice problems solved with zero external distractions",
       category: "study",
       completed: false,
       subtasks: ["Clarify primary objectives", "Deep practice work", "Validate results"],
@@ -298,12 +301,12 @@ export function analyzeQuery(query: string): {
         priority: "low",
         deadline: "Wrap-up",
         reason: "Reinforces concepts learned.",
+        successMetric: "Core takeaways summarized and retained",
         category: "review",
         completed: false,
       });
     }
   } else {
-    // Multiple subjects in short time (<90 mins)
     const perTask = Math.floor(availableMinutes / subjects.length);
     subjects.forEach((subj, i) => {
       tasks.push({
@@ -314,6 +317,7 @@ export function analyzeQuery(query: string): {
         priority: i === 0 ? "high" : "medium",
         deadline: subj.deadline,
         reason: `Condensed sprint on ${subj.name}.`,
+        successMetric: "Milestone deliverable outlined and progressed",
         category: subj.type === "assignment" ? "assignment" : "study",
         completed: false,
       });
@@ -330,7 +334,9 @@ export function analyzeQuery(query: string): {
     constraints: [`Time budget: ${availableMinutes} minutes`, "Zero distractions recommended"],
   };
 
-  const summary = `Allocated ${totalMin} minutes across ${tasks.filter(t => t.category !== "break").length} focus blocks, prioritizing ${subjects[0].name} for tomorrow while unlocking momentum on ${subjects[1]?.name || "core goals"}.`;
+  const summary = subjects.length >= 2
+    ? `You're not out of time. You're out of room for low-value work. I found ${availableMinutes} minutes tonight. I'm protecting ${tasks[0].duration} minutes for ${subjects[0].name} to guarantee mastery before tomorrow, then securing ${subjects[1]?.name || 'next priority'} in a controlled sprint. Let's execute.`
+    : `I found ${availableMinutes} minutes tonight. I've isolated a clean deep-work block for ${subjects[0].name}. We're cutting non-essential friction to secure results. Let's execute.`;
 
   return { context, tasks, summary, reasoning };
 }

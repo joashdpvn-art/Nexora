@@ -8,6 +8,7 @@ export interface Task {
   priority: Priority;
   deadline?: string;
   reason?: string;
+  successMetric?: string;
   category?: "study" | "assignment" | "break" | "review" | "project" | "general";
   completed: boolean;
   subtasks?: string[];
