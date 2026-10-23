@@ -1,18 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Clock,
-  Play,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  ArrowRight,
-  ShieldAlert,
-  SlidersHorizontal,
-  Target,
-} from "lucide-react";
+import { Play, SlidersHorizontal, ChevronDown, ChevronUp, Clock, CheckCircle2, ArrowRight } from "lucide-react";
 import { Plan, Task } from "@/types";
+import { NexoraCore } from "./NexoraCore";
 
 interface PlanViewProps {
   plan: Plan;
@@ -29,206 +20,137 @@ export function PlanView({
   onEditPlan,
   onToggleCompleteTask,
 }: PlanViewProps) {
-  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(plan.tasks[0]?.id || null);
+  const [showFullStrategy, setShowFullStrategy] = useState(false);
 
-  const getPriorityTag = (priority: Task["priority"]) => {
-    switch (priority) {
-      case "high":
-        return <span className="text-[10px] font-mono tracking-widest text-rose-400 uppercase font-semibold">CRITICAL</span>;
-      case "medium":
-        return <span className="text-[10px] font-mono tracking-widest text-amber-400 uppercase font-semibold">MODERATE</span>;
-      default:
-        return <span className="text-[10px] font-mono tracking-widest text-slate-500 uppercase font-semibold">INTERVAL</span>;
-    }
-  };
-
-  const nextTask = plan.tasks.find((t) => !completedTaskIds.includes(t.id));
+  // Identify next uncompleted objective (primary decision)
+  const primaryObjective = plan.tasks.find((t) => !completedTaskIds.includes(t.id)) || plan.tasks[0];
+  const remainingCount = plan.tasks.filter((t) => !completedTaskIds.includes(t.id)).length;
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 py-8 animate-in fade-in duration-300">
-      {/* Editorial Header */}
-      <div className="mb-10 pb-6 border-b border-white/[0.06]">
-        <div className="flex items-center space-x-2 text-[10px] font-mono uppercase tracking-widest text-brand-cyan mb-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
-          <span>STRATEGY SYNTHESIZED</span>
-        </div>
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-mono uppercase mb-3">
-          YOUR NEXT MOVE
-        </h2>
-        <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-light max-w-2xl">
-          {plan.summary}
-        </p>
-
-        {/* Global CTAs */}
-        <div className="flex items-center space-x-3 mt-6">
-          <button
-            onClick={() => onStartPlan(nextTask?.id)}
-            className="px-6 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider bg-brand-cyan hover:bg-sky-400 text-slate-950 flex items-center space-x-2 shadow-telemetry transition duration-200"
-          >
-            <Play className="w-3.5 h-3.5 fill-slate-950" />
-            <span>START PLAN</span>
-          </button>
-
-          <button
-            onClick={onEditPlan}
-            className="px-4 py-2.5 rounded-xl text-xs font-mono tracking-wider text-slate-400 hover:text-white border border-white/[0.08] hover:border-white/20 transition flex items-center space-x-1.5"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span>EDIT PLAN</span>
-          </button>
-        </div>
+    <div className="w-full max-w-3xl mx-auto px-4 py-8 sm:py-12 flex flex-col items-center text-center animate-in fade-in duration-500">
+      {/* Living AI Core Presence (Ready State) */}
+      <div className="mb-6">
+        <NexoraCore state="ready" size="sm" />
       </div>
 
-      {/* Sequential Strategy (Progressive Editorial Reveal, No Repetitive Cards) */}
-      <div className="space-y-8 mb-12">
-        <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 uppercase tracking-widest">
-          <span>SEQUENCE TIMELINE</span>
-          <span>{plan.totalMinutes} MIN TOTAL &bull; {plan.tasks.length} OBJECTIVES</span>
-        </div>
+      {/* Telemetry Status */}
+      <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-[10px] font-mono tracking-widest uppercase mb-4">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+        <span>SYSTEM READY</span>
+      </div>
 
-        <div className="space-y-6">
-          {plan.tasks.map((task, index) => {
-            const isCompleted = completedTaskIds.includes(task.id);
-            const isExpanded = expandedTaskId === task.id;
-            const isNext = task.id === nextTask?.id;
+      {/* Hero Decision Tag */}
+      <div className="text-[11px] font-mono tracking-[0.25em] text-brand-cyan uppercase font-bold mb-3">
+        YOUR NEXT MOVE
+      </div>
 
-            return (
-              <div
-                key={task.id}
-                className={`transition-all duration-300 pb-6 border-b border-white/[0.05] ${
-                  isCompleted ? "opacity-40" : ""
-                }`}
-              >
-                {/* Header Line */}
-                <div className="flex items-baseline justify-between flex-wrap gap-2 mb-2">
-                  <div className="flex items-baseline space-x-3">
-                    <span className="font-mono text-xs font-bold text-brand-cyan">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <h3
-                      className={`text-lg sm:text-xl font-bold font-mono tracking-tight uppercase ${
-                        isCompleted ? "line-through text-slate-500" : isNext ? "text-white" : "text-slate-200"
-                      }`}
-                    >
-                      {task.title}
-                    </h3>
-                  </div>
+      {/* Focal Objective Title (Huge, Authoritative) */}
+      <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white tracking-tight uppercase font-mono mb-2">
+        {primaryObjective.title}
+      </h1>
 
-                  <div className="flex items-center space-x-3">
-                    {getPriorityTag(task.priority)}
-                    <span className="text-xs font-mono text-slate-400 flex items-center space-x-1">
-                      <Clock className="w-3 h-3 text-brand-cyan" />
-                      <span>{task.duration} MIN</span>
-                    </span>
-                  </div>
-                </div>
+      {/* Duration Callout */}
+      <div className="text-xl sm:text-3xl font-mono font-bold text-slate-400 tracking-wider mb-6">
+        {primaryObjective.duration} MINUTES
+      </div>
 
-                {/* 4 Pillars: What to do / Why NEXORA chose it / Success metric */}
-                <div className="space-y-1.5 text-xs text-slate-300 font-light pl-7">
-                  {task.subtitle && (
-                    <div className="flex items-start space-x-2">
-                      <span className="font-mono text-[10px] text-slate-500 uppercase tracking-wider shrink-0 mt-0.5 w-20">
-                        FOCUS:
+      {/* AI Decision Rationale */}
+      <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-light max-w-lg mb-8">
+        &ldquo;{plan.summary}&rdquo;
+      </p>
+
+      {/* Primary Action Button: EXECUTE */}
+      <div className="mb-6">
+        <button
+          onClick={() => onStartPlan(primaryObjective.id)}
+          className="px-10 py-3.5 rounded-2xl font-mono font-bold text-sm tracking-widest uppercase bg-brand-cyan hover:bg-sky-400 text-slate-950 flex items-center space-x-2.5 shadow-telemetry-active transition-all duration-200 transform hover:scale-[1.02] cursor-pointer"
+        >
+          <Play className="w-4 h-4 fill-slate-950" />
+          <span>EXECUTE</span>
+        </button>
+      </div>
+
+      {/* Secondary Logic Snippet */}
+      <div className="text-xs font-mono text-slate-500 max-w-md mb-10">
+        <span className="text-slate-400">DECISION: </span>
+        {primaryObjective.reason || "Immediate deadline with highest cognitive load demands protected focus."}
+      </div>
+
+      {/* Secondary: View Full Strategy (Progressive Disclosure) */}
+      <div className="w-full max-w-xl border-t border-white/[0.06] pt-6">
+        <button
+          type="button"
+          onClick={() => setShowFullStrategy((prev) => !prev)}
+          className="inline-flex items-center space-x-2 text-xs font-mono text-slate-400 hover:text-white transition tracking-wider uppercase mb-4"
+        >
+          <span>{showFullStrategy ? "Hide full sequence" : `View full strategy (${plan.tasks.length} objectives) →`}</span>
+          {showFullStrategy ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        </button>
+
+        {showFullStrategy && (
+          <div className="text-left space-y-6 pt-4 animate-in fade-in duration-300">
+            {/* Sequence Timeline */}
+            <div className="space-y-4">
+              {plan.tasks.map((task, idx) => {
+                const isCompleted = completedTaskIds.includes(task.id);
+                const isCurrent = task.id === primaryObjective.id;
+
+                return (
+                  <div
+                    key={task.id}
+                    className={`pb-4 border-b border-white/[0.04] transition ${
+                      isCompleted ? "opacity-40" : ""
+                    }`}
+                  >
+                    <div className="flex items-baseline justify-between">
+                      <div className="flex items-baseline space-x-2.5">
+                        <span className="font-mono text-xs font-bold text-brand-cyan">
+                          {String(idx + 1).padStart(2, "0")}
+                        </span>
+                        <h3 className={`font-mono font-bold text-base uppercase ${isCompleted ? "line-through text-slate-500" : isCurrent ? "text-white" : "text-slate-300"}`}>
+                          {task.title}
+                        </h3>
+                      </div>
+                      <span className="font-mono text-xs text-slate-400">
+                        {task.duration} MIN
                       </span>
-                      <span className="text-slate-200">{task.subtitle}</span>
                     </div>
-                  )}
 
-                  {task.reason && (
-                    <div className="flex items-start space-x-2">
-                      <span className="font-mono text-[10px] text-brand-cyan uppercase tracking-wider shrink-0 mt-0.5 w-20 font-semibold">
-                        LOGIC:
-                      </span>
-                      <span className="text-slate-300">{task.reason}</span>
-                    </div>
-                  )}
+                    {task.subtitle && (
+                      <p className="text-xs text-slate-400 font-light mt-1 pl-6">
+                        {task.subtitle}
+                      </p>
+                    )}
 
-                  {task.successMetric && (
-                    <div className="flex items-start space-x-2">
-                      <span className="font-mono text-[10px] text-emerald-400 uppercase tracking-wider shrink-0 mt-0.5 w-20 font-semibold">
-                        SUCCESS:
-                      </span>
-                      <span className="text-emerald-300/90">{task.successMetric}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Checkpoints & Inline Actions */}
-                <div className="pl-7 pt-3 flex items-center justify-between flex-wrap gap-2">
-                  {task.subtasks && task.subtasks.length > 0 && (
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
-                        className="text-[11px] font-mono text-slate-500 hover:text-slate-300 flex items-center space-x-1 transition"
-                      >
-                        <Target className="w-3 h-3 text-brand-cyan" />
-                        <span>CHECKPOINTS ({task.subtasks.length})</span>
-                        {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                      </button>
-
-                      {isExpanded && (
-                        <ul className="mt-2 space-y-1 pl-1">
-                          {task.subtasks.map((st, i) => (
-                            <li key={i} className="text-xs text-slate-400 flex items-center space-x-2 font-light">
-                              <span className="w-1 h-1 rounded-full bg-brand-cyan" />
-                              <span>{st}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="flex items-center space-x-3 ml-auto">
                     {onToggleCompleteTask && (
-                      <button
-                        type="button"
-                        onClick={() => onToggleCompleteTask(task.id)}
-                        className="text-[11px] font-mono text-slate-500 hover:text-white transition flex items-center space-x-1"
-                      >
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span>{isCompleted ? "COMPLETED" : "MARK DONE"}</span>
-                      </button>
-                    )}
-
-                    {!isCompleted && (
-                      <button
-                        type="button"
-                        onClick={() => onStartPlan(task.id)}
-                        className="text-[11px] font-mono font-semibold text-brand-cyan hover:text-sky-300 flex items-center space-x-1 transition"
-                      >
-                        <span>START THIS OBJECTIVE</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
+                      <div className="pl-6 pt-2 flex items-center space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => onToggleCompleteTask(task.id)}
+                          className="text-[11px] font-mono text-slate-500 hover:text-white transition flex items-center space-x-1"
+                        >
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>{isCompleted ? "COMPLETED" : "MARK DONE"}</span>
+                        </button>
+                      </div>
                     )}
                   </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* WHY THIS ORDER — Transparent Decision Console */}
-      <div className="p-6 rounded-2xl surface-obsidian border-brand-cyan/20 space-y-4">
-        <div className="flex items-center space-x-2 text-[10px] font-mono font-bold uppercase text-brand-cyan tracking-widest">
-          <ShieldAlert className="w-3.5 h-3.5 text-brand-cyan" />
-          <span>WHY THIS ORDER</span>
-        </div>
-
-        <div className="space-y-3">
-          {plan.reasoning.map((item, idx) => (
-            <div key={idx} className="flex items-start space-x-3">
-              <span className="font-mono text-xs font-bold text-brand-cyan bg-brand-cyan/10 border border-brand-cyan/25 rounded px-1.5 py-0.5 shrink-0 mt-0.5">
-                {String(idx + 1).padStart(2, "0")}
-              </span>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
-                {item}
-              </p>
+                );
+              })}
             </div>
-          ))}
-        </div>
+
+            {/* Edit Plan Option */}
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={onEditPlan}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono text-slate-400 hover:text-white border border-white/[0.08] hover:border-white/20 transition flex items-center space-x-1.5"
+              >
+                <SlidersHorizontal className="w-3 h-3" />
+                <span>MODIFY SEQUENCE</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

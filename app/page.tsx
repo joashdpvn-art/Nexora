@@ -7,7 +7,6 @@ import { PlanView } from "@/components/PlanView";
 import { FocusMode } from "@/components/FocusMode";
 import { SessionSummary } from "@/components/SessionSummary";
 import { EditPlanModal } from "@/components/EditPlanModal";
-import { ConversationHistory } from "@/components/ConversationHistory";
 import {
   clearSessionStorage,
   loadSessionFromStorage,
@@ -392,56 +391,9 @@ export default function NexoraApp() {
         </div>
       )}
 
-      {/* System Navigation Ribbon (when a plan exists and not in focus mode) */}
-      {session.plan && session.currentView !== "focus" && (
-        <div className="max-w-4xl mx-auto w-full px-4 pt-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => switchView("command")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono tracking-wider transition ${
-                session.currentView === "command"
-                  ? "bg-white/[0.08] text-white font-semibold border border-white/[0.12]"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              COMMAND CENTER
-            </button>
-            <button
-              onClick={() => switchView("plan")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono tracking-wider transition ${
-                session.currentView === "plan"
-                  ? "bg-white/[0.08] text-white font-semibold border border-white/[0.12]"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              PLAN BREAKDOWN
-            </button>
-            {session.completedTaskIds.length > 0 && (
-              <button
-                onClick={() => switchView("summary")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono tracking-wider transition ${
-                  session.currentView === "summary"
-                    ? "bg-white/[0.08] text-white font-semibold border border-white/[0.12]"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                SESSION SUMMARY
-              </button>
-            )}
-          </div>
-
-          <button
-            onClick={() => handleStartPlan()}
-            className="px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold bg-brand-cyan/15 hover:bg-brand-cyan text-brand-cyan hover:text-slate-950 border border-brand-cyan/30 transition flex items-center space-x-1.5"
-          >
-            <span>RESUME FOCUS</span>
-          </button>
-        </div>
-      )}
-
       {/* Main Content Workspace by State */}
       <main className="flex-1 flex flex-col justify-center py-6 sm:py-10">
-        {/* STATE 1: COMMAND CENTER */}
+        {/* STATE 1: COMMAND */}
         {session.currentView === "command" && (
           <div className="w-full">
             <CommandInput
@@ -452,25 +404,22 @@ export default function NexoraApp() {
               completedCount={session.completedTaskIds.length}
             />
 
-            {/* Minimal Inline Link to Active Plan */}
+            {/* Minimal Inline Link to Active Decision */}
             {session.plan && (
-              <div className="text-center mt-6">
+              <div className="text-center mt-4">
                 <button
                   onClick={() => switchView("plan")}
-                  className="inline-flex items-center space-x-1.5 text-[11px] font-mono text-slate-500 hover:text-brand-cyan transition tracking-widest uppercase"
+                  className="inline-flex items-center space-x-2 text-xs font-mono text-slate-500 hover:text-brand-cyan transition tracking-widest uppercase"
                 >
-                  <span>ACTIVE STRATEGY: {session.plan.tasks.length} OBJECTIVES &bull; {session.plan.totalMinutes} MIN</span>
+                  <span>RETURN TO DECISION: {session.plan.tasks[0]?.title}</span>
                   <span className="text-brand-cyan">&rarr;</span>
                 </button>
               </div>
             )}
-
-            {/* Conversational Dialogue Log */}
-            <ConversationHistory history={session.history} />
           </div>
         )}
 
-        {/* STATE 2: PLAN / INSIGHT VIEW */}
+        {/* STATE 2: DECISION (YOUR NEXT MOVE) */}
         {session.currentView === "plan" && session.plan && (
           <div>
             <PlanView
@@ -480,11 +429,10 @@ export default function NexoraApp() {
               onEditPlan={() => setIsEditModalOpen(true)}
               onToggleCompleteTask={handleToggleCompleteFromPlan}
             />
-            <ConversationHistory history={session.history} />
           </div>
         )}
 
-        {/* STATE 3: FOCUS MODE */}
+        {/* STATE 3: EXECUTION (FOCUS MODE) */}
         {session.currentView === "focus" && session.plan && (
           <FocusMode
             plan={session.plan}
@@ -498,7 +446,7 @@ export default function NexoraApp() {
           />
         )}
 
-        {/* STATE 4: SESSION SUMMARY */}
+        {/* STATE 4: RESULT */}
         {session.currentView === "summary" && session.plan && (
           <SessionSummary
             plan={session.plan}
