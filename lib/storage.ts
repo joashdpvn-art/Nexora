@@ -1,6 +1,6 @@
 import { Plan, SessionState } from "@/types";
 
-const STORAGE_KEY = "nexora_session_v1";
+const STORAGE_KEY = "nexora_session_v2";
 
 export const initialSessionState: SessionState = {
   currentView: "command",
@@ -28,10 +28,12 @@ export function loadSessionFromStorage(): SessionState {
   }
 
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return initialSessionState;
-    const parsed = JSON.parse(raw) as SessionState;
-    return parsed;
+    // Purge legacy storage keys from previous runs
+    localStorage.removeItem("nexora_session_v1");
+    localStorage.removeItem(STORAGE_KEY);
+    // On fresh page reload, NEXORA must always start in the neutral idle state
+    // (NexoraCore visible, "SYSTEM READY", command input visible, NO plan, NO default data)
+    return initialSessionState;
   } catch (error) {
     console.warn("NEXORA: Failed to load session from localStorage, resetting to defaults", error);
     return initialSessionState;
@@ -55,6 +57,7 @@ export function saveSessionToStorage(state: SessionState): void {
 export function clearSessionStorage(): SessionState {
   if (typeof window !== "undefined") {
     try {
+      localStorage.removeItem("nexora_session_v1");
       localStorage.removeItem(STORAGE_KEY);
     } catch (e) {
       console.warn("NEXORA: Failed to clear session storage", e);

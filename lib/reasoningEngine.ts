@@ -145,13 +145,15 @@ export function analyzeQuery(query: string): {
     }
   }
 
-  // Fallback if no known keywords matched
+  // Fallback: only extract from clauses if explicit academic/task keywords exist
   if (subjects.length === 0) {
-    // Attempt to extract meaningful phrases from sentences
     const clauses = query.split(/[,.;&]|\band\b/i).map(c => c.trim()).filter(c => c.length > 3);
-    if (clauses.length > 0) {
-      clauses.slice(0, 3).forEach((clause, idx) => {
-        const cleaned = clause.replace(/^(i have|i need to|help me|i want to|there is)\s*/i, "").trim();
+    const academicTaskKeywords = /exam|assignment|test|study|review|project|homework|paper|lab|quiz|prep|read|write|chapter|deliverable|math|dbms|physics|chemistry|history|biology|economics|code|coding/i;
+
+    for (let idx = 0; idx < Math.min(clauses.length, 3); idx++) {
+      const clause = clauses[idx];
+      if (academicTaskKeywords.test(clause)) {
+        const cleaned = clause.replace(/^(i have|i need to|help me|i want to|there is|i got)\s*/i, "").trim();
         const capitalized = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
         subjects.push({
           name: capitalized.length > 30 ? capitalized.slice(0, 30) + "..." : capitalized,
@@ -160,16 +162,24 @@ export function analyzeQuery(query: string): {
           urgencyScore: 8 - idx * 2,
           details: "Focused execution and deliverables",
         });
-      });
-    } else {
-      subjects.push({
-        name: "Deep Focus Session",
-        type: "study",
-        deadline: "Tonight",
-        urgencyScore: 8,
-        details: "High-priority objectives and core review",
-      });
+      }
     }
+  }
+
+  // If no identifiable subjects were detected, return empty tasks without creating any plan
+  if (subjects.length === 0) {
+    return {
+      context: {
+        availableTimeMinutes: availableMinutes,
+        urgencyLevel: "moderate",
+        identifiedSubjects: [],
+        deadlines: [],
+        constraints: [],
+      },
+      tasks: [],
+      summary: "",
+      reasoning: [],
+    };
   }
 
   // Sort subjects by urgency
@@ -354,10 +364,68 @@ export function handleFollowUp(
   query: string,
   currentState: SessionState
 ): FollowUpAction {
-  const lower = query.toLowerCase().trim();
+  const trimmed = (query || "").trim();
+  if (!trimmed) {
+    return {
+      type: "MESSAGE_ONLY",
+      message: "NEXORA is online. Tell me what tasks or deadlines you have, and I will construct an optimized plan.",
+    };
+  }
+
+  const lower = trimmed.toLowerCase();
+  const clean = lower.replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+  const words = clean.split(" ").filter(Boolean);
   const plan = currentState.plan;
 
-  // 1. "What should I do next?" / "What's next?" / "Now what?"
+  // 1. Explicit Demo Scenario Launch
+  if (
+    clean === "run scenario" ||
+    clean === "run demo" ||
+    clean === "demo" ||
+    clean === "demo scenario" ||
+    clean === "launch scenario" ||
+    clean === "launch demo" ||
+    clean === "run the scenario" ||
+    clean === "run demo scenario"
+  ) {
+    const demoQuery = "I have Maths tomorrow, a DBMS assignment due Friday, and I have two hours tonight. Help me decide what to do.";
+    const parsed = analyzeQuery(demoQuery);
+    return {
+      type: "NEW_PLAN",
+      plan: {
+        id: `plan-${Date.now()}`,
+        query: demoQuery,
+        summary: parsed.summary,
+        tasks: parsed.tasks,
+        totalMinutes: parsed.tasks.reduce((acc, t) => acc + t.duration, 0),
+        reasoning: parsed.reasoning,
+        extractedContext: parsed.context,
+        createdAt: new Date().toISOString(),
+      },
+      message: parsed.summary,
+    };
+  }
+
+  // 2. Casual Conversational Greetings & Remarks -> NEVER generate a plan
+  const greetings = new Set([
+    "hi", "hello", "hey", "yo", "sup", "howdy", "hola", "greetings",
+    "good morning", "good afternoon", "good evening", "good night", "good day",
+    "thanks", "thank you", "thx", "cool", "ok", "okay", "great", "awesome", "got it", "understood", "nice",
+    "help", "who are you", "what can you do", "what is nexora", "test", "ping"
+  ]);
+
+  const isGreeting =
+    greetings.has(clean) ||
+    (words.length <= 2 && words.every(w => ["hi", "hello", "hey", "yo", "there", "nexora", "assistant", "bot", "morning", "evening"].includes(w)));
+
+  if (isGreeting) {
+    return {
+      type: "MESSAGE_ONLY",
+      message: "NEXORA is online and ready. Tell me what tasks or deadlines you have (e.g. 'I have Maths tomorrow, a DBMS assignment due Friday, and two hours tonight'), and I will construct your execution plan.",
+    };
+  }
+
+  // 3. "What should I do next?" / "What's next?" / "Now what?"
   if (
     lower.includes("what should i do next") ||
     lower.includes("what's next") ||
@@ -516,6 +584,14 @@ export function handleFollowUp(
 
   // 6. Otherwise generate a fresh or revised plan
   const parsed = analyzeQuery(query);
+
+  if (parsed.tasks.length === 0) {
+    return {
+      type: "MESSAGE_ONLY",
+      message: "I didn't detect any specific tasks or deadlines. Tell me what you're dealing with (e.g. 'I have Maths tomorrow, a DBMS assignment due Friday, and two hours tonight') and I'll construct your plan.",
+    };
+  }
+
   const newPlan: Plan = {
     id: `plan-${Date.now()}`,
     query,
