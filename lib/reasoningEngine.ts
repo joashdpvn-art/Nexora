@@ -83,7 +83,7 @@ export function analyzeQuery(query: string): {
       type: lower.includes("assignment") ? "assignment" : "exam",
       deadline: isTomorrow ? "Tomorrow" : "Upcoming",
       urgencyScore: isTomorrow ? 9 : 7,
-      details: "Vectors, 3D Geometry & Core Problem Sets",
+      details: "Core Practice Problems & Concept Review",
     });
   }
 
@@ -93,31 +93,33 @@ export function analyzeQuery(query: string): {
     subjects.push({
       name: "DBMS Assignment",
       type: "assignment",
-      deadline: isFriday ? "Friday" : "Later this week",
-      urgencyScore: isFriday ? 5 : 4,
-      details: "Schema Design, ER Diagrams & Normalization",
+      deadline: isFriday ? "Friday" : lower.includes("tomorrow") ? "Tomorrow" : "Later this week",
+      urgencyScore: isFriday ? 5 : 7,
+      details: "Schema Design, Queries & Deliverables",
     });
   }
 
   // 3. Physics / Science
   if (lower.includes("physics")) {
+    const isTomorrow = lower.includes("tomorrow") || lower.includes("exam");
     subjects.push({
       name: "Physics",
       type: "study",
-      deadline: lower.includes("tomorrow") ? "Tomorrow" : "Upcoming",
-      urgencyScore: 8,
-      details: "Electromagnetism & Formula Revision",
+      deadline: isTomorrow ? "Tomorrow" : "Upcoming",
+      urgencyScore: isTomorrow ? 9 : 7,
+      details: "Core Formulas, Practice Sets & Problem Solving",
     });
   }
 
   // 4. Chemistry
   if (lower.includes("chemistry")) {
+    const isTomorrow = lower.includes("tomorrow") || lower.includes("exam");
     subjects.push({
       name: "Chemistry",
       type: "study",
-      deadline: "Upcoming",
-      urgencyScore: 6,
-      details: "Reaction Mechanisms & Stoichiometry",
+      deadline: isTomorrow ? "Tomorrow" : "Upcoming",
+      urgencyScore: isTomorrow ? 8 : 6,
+      details: "Reaction Mechanisms, Stoichiometry & Notes",
     });
   }
 
@@ -126,7 +128,7 @@ export function analyzeQuery(query: string): {
     subjects.push({
       name: "Presentation Prep",
       type: "presentation",
-      deadline: "Today / Soon",
+      deadline: lower.includes("today") || lower.includes("tomorrow") ? "Imminent" : "Upcoming",
       urgencyScore: 8,
       details: "Slide Structure, Key Talking Points & Rehearsal",
     });
@@ -135,12 +137,24 @@ export function analyzeQuery(query: string): {
   // 6. Coding / Project / Web Dev
   if (lower.includes("code") || lower.includes("coding") || lower.includes("project") || lower.includes("dev")) {
     if (!subjects.some(s => s.name.includes("DBMS"))) {
+      let deadline = "This week";
+      let urgencyScore = 6;
+      if (lower.includes("monday")) {
+        deadline = "Monday";
+        urgencyScore = 5;
+      } else if (lower.includes("tomorrow")) {
+        deadline = "Tomorrow";
+        urgencyScore = 8;
+      } else if (lower.includes("friday")) {
+        deadline = "Friday";
+        urgencyScore = 5;
+      }
       subjects.push({
-        name: "Project Implementation",
+        name: "Project Deliverable",
         type: "project",
-        deadline: "This week",
-        urgencyScore: 6,
-        details: "Feature Development & Unit Testing",
+        deadline,
+        urgencyScore,
+        details: "Feature Development, Milestones & Testing",
       });
     }
   }
@@ -203,7 +217,7 @@ export function analyzeQuery(query: string): {
       `Your available time tonight is bounded to ${availableMinutes} minutes. We are eliminating low-value friction and protecting deep focus.`
     );
     reasoning.push(
-      `${subjects[1].name} (${subjects[1].deadline}) follows immediately after a restorative reset to lock down structural momentum before Friday.`
+      `${subjects[1].name} (${subjects[1].deadline}) follows immediately after a restorative reset to lock down structural momentum.`
     );
   } else if (subjects.length === 1) {
     reasoning.push(
@@ -227,13 +241,13 @@ export function analyzeQuery(query: string): {
       priority: "high",
       deadline: subjects[0].deadline,
       reason: `Deadline is closest (${subjects[0].deadline}). High cognitive demand requires protected focus.`,
-      successMetric: "Mastered critical theorem sets and passed timed self-test without checking notes",
+      successMetric: `Completed core deliverables for ${subjects[0].name} with zero external distractions`,
       category: "study",
       completed: false,
       subtasks: [
-        "Review critical theorem definitions & formulas",
-        "Solve 4 representative high-weight problems",
-        "Self-test on edge cases under timed pressure",
+        `Review primary concept definitions & requirements for ${subjects[0].name}`,
+        `Solve representative high-weight practice sets or complete primary deliverable`,
+        `Validate edge cases and finalize outputs`,
       ],
     });
 
@@ -258,14 +272,14 @@ export function analyzeQuery(query: string): {
       duration: secondaryDuration,
       priority: "medium",
       deadline: subjects[1].deadline,
-      reason: `Due ${subjects[1].deadline}. Early schema breakdown eliminates deadline dread.`,
-      successMetric: "Entity relationships defined and starter scaffolding drafted",
-      category: "assignment",
+      reason: `Due ${subjects[1].deadline}. Early milestone progress eliminates deadline pressure.`,
+      successMetric: `Progress milestones drafted and key blockers resolved for ${subjects[1].name}`,
+      category: subjects[1].type === "assignment" ? "assignment" : "study",
       completed: false,
       subtasks: [
-        "Read assignment problem prompt completely",
-        "Outline schema entities & initial constraints",
-        "Draft quick notes for tomorrow's continuation",
+        `Audit task prompt and scope requirements for ${subjects[1].name}`,
+        `Draft core deliverable structure and resolve critical dependencies`,
+        `Catalog key next steps for continuation`,
       ],
     });
 
@@ -345,7 +359,7 @@ export function analyzeQuery(query: string): {
   };
 
   const summary = subjects.length >= 2
-    ? `I found ${availableMinutes} usable minutes tonight. ${subjects[0].name} is your highest-risk objective—I'm protecting ${tasks[0].duration} minutes for it to guarantee tomorrow's mastery. ${subjects[1]?.name || 'Secondary priorities'} can be compressed into a controlled sprint without compromising tomorrow. You're not out of time. You're out of room for low-value work.`
+    ? `I found ${availableMinutes} usable minutes tonight. ${subjects[0].name} is your highest-risk objective—I'm protecting ${tasks[0].duration} minutes for it to guarantee readiness. ${subjects[1]?.name || 'Secondary priorities'} can be compressed into a controlled sprint without compromising your primary objective. You're not out of time. You're out of room for low-value work.`
     : `I found ${availableMinutes} usable minutes. I've isolated an uninterrupted deep-work corridor for ${subjects[0].name}. We're cutting low-value friction to lock down results. Let's execute.`;
 
   return { context, tasks, summary, reasoning };
