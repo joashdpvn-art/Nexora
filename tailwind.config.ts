@@ -9,46 +9,53 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#08090D",
-        surface: {
-          50: "#1E222D",
-          100: "#161922",
-          200: "#10131B",
-          300: "#0C0E14",
+        background: "#050608",
+        obsidian: {
+          950: "#050608",
+          900: "#090B0F",
+          850: "#0D1017",
+          800: "#121620",
+          700: "#1A1F2D",
+          600: "#242B3E",
         },
         brand: {
           cyan: "#38BDF8",
+          sky: "#0284C7",
+          electric: "#00E5FF",
           indigo: "#6366F1",
           violet: "#8B5CF6",
           emerald: "#10B981",
           amber: "#F59E0B",
           rose: "#F43F5E",
         },
-        border: {
-          subtle: "rgba(255, 255, 255, 0.08)",
-          glow: "rgba(56, 189, 248, 0.2)",
-        }
       },
       boxShadow: {
-        "glass": "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
-        "glow-cyan": "0 0 25px -5px rgba(56, 189, 248, 0.25)",
-        "glow-indigo": "0 0 25px -5px rgba(99, 102, 241, 0.25)",
-        "glow-emerald": "0 0 25px -5px rgba(16, 185, 129, 0.25)",
+        "telemetry": "0 0 15px -3px rgba(56, 189, 248, 0.15)",
+        "telemetry-active": "0 0 25px -4px rgba(56, 189, 248, 0.35)",
+        "telemetry-emerald": "0 0 20px -3px rgba(16, 185, 129, 0.3)",
+        "glass-surface": "0 8px 32px 0 rgba(0, 0, 0, 0.5)",
       },
       animation: {
-        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "float": "float 6s ease-in-out infinite",
-        "shimmer": "shimmer 2s linear infinite",
+        "pulse-subtle": "pulseSubtle 4s ease-in-out infinite",
+        "grid-fade": "gridFade 8s ease-in-out infinite",
+        "scan-line": "scanline 4s linear infinite",
       },
       keyframes: {
-        float: {
-          "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-6px)" },
+        pulseSubtle: {
+          "0%, 100%": { opacity: "0.4" },
+          "50%": { opacity: "0.8" },
         },
-        shimmer: {
-          from: { backgroundPosition: "0 0" },
-          to: { backgroundPosition: "-200% 0" },
+        gridFade: {
+          "0%, 100%": { opacity: "0.03" },
+          "50%": { opacity: "0.07" },
         },
+        scanline: {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(1000%)" },
+        },
+      },
+      fontFamily: {
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
       },
     },
   },

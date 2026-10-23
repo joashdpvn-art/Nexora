@@ -2,13 +2,16 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "NEXORA | Think less. Do more.",
-  description: "Agentic personal command center that turns natural-language requests into intelligent plans and actionable workflows.",
-  keywords: ["productivity", "executive assistant", "agentic workflows", "focus mode", "time management"],
+  title: "NEXORA — Think less. Do more.",
+  description: "An intelligent command center that turns natural-language context into actionable plans.",
+  keywords: ["command center", "executive assistant", "deep focus", "agentic planning", "productivity operating system"],
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#08090D",
+  themeColor: "#050608",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

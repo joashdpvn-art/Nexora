@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Header } from "@/components/Header";
-import { CommandInput, DEMO_PROMPT } from "@/components/CommandInput";
+import { Header, SystemStatusState } from "@/components/Header";
+import { CommandInput } from "@/components/CommandInput";
 import { PlanView } from "@/components/PlanView";
 import { FocusMode } from "@/components/FocusMode";
 import { SessionSummary } from "@/components/SessionSummary";
@@ -16,16 +16,17 @@ import {
 } from "@/lib/storage";
 import { processCommand } from "@/lib/aiProvider";
 import { Plan, SessionState, Task, ViewState } from "@/types";
-import { ArrowLeft, CheckCircle2, Info, Sparkles } from "lucide-react";
+import { CheckCircle2, Info, Sparkles } from "lucide-react";
 
 export default function NexoraApp() {
   const [session, setSession] = useState<SessionState>(initialSessionState);
   const [isMounted, setIsMounted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStep, setProcessingStep] = useState<"received" | "understanding" | "synthesizing">("received");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [notification, setNotification] = useState<{ text: string; type?: "info" | "success" } | null>(null);
 
-  // Show auto-dismissing toast notifications
+  // Auto-dismissing toast notifications
   const showNotification = useCallback((text: string, type: "info" | "success" = "info") => {
     setNotification({ text, type });
     setTimeout(() => {
@@ -47,11 +48,12 @@ export default function NexoraApp() {
     }
   }, [session, isMounted]);
 
-  // Command submission handler
+  // Command submission handler with intelligent micro-interaction steps
   const handleExecuteCommand = async (command: string) => {
     if (!command.trim() || isProcessing) return;
 
     setIsProcessing(true);
+    setProcessingStep("received");
 
     const userMessage = {
       id: `msg-${Date.now()}-user`,
@@ -68,8 +70,24 @@ export default function NexoraApp() {
       history: [userMessage, ...prev.history],
     }));
 
+    // Step 1 -> Step 2
+    setTimeout(() => {
+      setProcessingStep("understanding");
+    }, 280);
+
+    // Step 2 -> Step 3
+    setTimeout(() => {
+      setProcessingStep("synthesizing");
+    }, 600);
+
     try {
-      const { action } = await processCommand(command, session);
+      // Process with slight natural cadence to allow micro-interaction to be visible
+      const [res] = await Promise.all([
+        processCommand(command, session),
+        new Promise((resolve) => setTimeout(resolve, 850)),
+      ]);
+
+      const { action } = res;
 
       if (action.type === "NEW_PLAN") {
         setSession((prev) => ({
@@ -88,7 +106,7 @@ export default function NexoraApp() {
             ...prev.history,
           ],
         }));
-        showNotification("Intelligent execution plan constructed.", "success");
+        showNotification("Optimal execution sequence constructed.", "success");
       } else if (action.type === "START_TASK") {
         setSession((prev) => ({
           ...prev,
@@ -196,7 +214,7 @@ export default function NexoraApp() {
       }
     } catch (err) {
       console.error("Execution failed:", err);
-      showNotification("Could not process request. Please try again.", "info");
+      showNotification("Could not process command. Please retry.", "info");
     } finally {
       setIsProcessing(false);
     }
@@ -226,7 +244,6 @@ export default function NexoraApp() {
       const remaining = prev.plan?.tasks.filter((t) => !completedList.includes(t.id)) || [];
 
       if (remaining.length === 0) {
-        // All tasks finished -> Transition to session summary!
         return {
           ...prev,
           completedTaskIds: completedList,
@@ -235,7 +252,7 @@ export default function NexoraApp() {
             {
               id: `msg-${Date.now()}-nexora`,
               role: "nexora" as const,
-              text: "All tasks completed! Session goals met with distinction.",
+              text: "All objectives executed! Momentum unlocked.",
               timestamp: new Date().toISOString(),
               type: "status_update" as const,
             },
@@ -244,7 +261,6 @@ export default function NexoraApp() {
         };
       }
 
-      // Next task in queue
       const nextTask = remaining[0];
       return {
         ...prev,
@@ -254,7 +270,7 @@ export default function NexoraApp() {
           {
             id: `msg-${Date.now()}-nexora`,
             role: "nexora" as const,
-            text: `Completed task. Advanced to next objective: ${nextTask.title}.`,
+            text: `Objective complete. Next best action: ${nextTask.title} (${nextTask.duration} mins).`,
             timestamp: new Date().toISOString(),
             type: "status_update" as const,
           },
@@ -263,7 +279,7 @@ export default function NexoraApp() {
       };
     });
 
-    showNotification("Task completed! Momentum unlocked.", "success");
+    showNotification("Objective complete. Next action queued.", "success");
   };
 
   const handleSkipTask = (taskId: string) => {
@@ -324,25 +340,33 @@ export default function NexoraApp() {
         },
       };
     });
-    showNotification("Plan updated successfully.", "success");
+    showNotification("Execution plan updated.", "success");
   };
 
   const handleResetSession = () => {
     const fresh = clearSessionStorage();
     setSession(fresh);
-    showNotification("Session context reset.", "info");
+    showNotification("Session memory reset to baseline.", "info");
   };
 
   const switchView = (view: ViewState) => {
     setSession((prev) => ({ ...prev, currentView: view }));
   };
 
+  // Derive system telemetry state for Header
+  const getHeaderSystemStatus = (): SystemStatusState => {
+    if (isProcessing) return "thinking";
+    if (session.currentView === "focus") return "focus";
+    if (session.plan) return "ready";
+    return "online";
+  };
+
   if (!isMounted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex items-center space-x-2 text-brand-cyan text-sm font-mono">
+        <div className="flex items-center space-x-2.5 text-brand-cyan text-xs font-mono">
           <Sparkles className="w-4 h-4 animate-spin" />
-          <span>Booting NEXORA...</span>
+          <span className="tracking-widest uppercase">INITIALIZING NEXORA...</span>
         </div>
       </div>
     );
@@ -351,22 +375,23 @@ export default function NexoraApp() {
   const hasActiveContext = Boolean(session.plan || session.completedTaskIds.length > 0);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-slate-100 radial-mesh antialiased">
-      {/* Global Header */}
+    <div className="min-h-screen flex flex-col cinematic-environment text-slate-100 antialiased">
+      {/* Global Header — Futuristic System Console */}
       <Header
-        onReset={handleResetSession}
+        systemStatus={getHeaderSystemStatus()}
         hasActiveContext={hasActiveContext}
         completedCount={session.completedTaskIds.length}
+        onReset={handleResetSession}
       />
 
-      {/* Floating Notification Toast */}
+      {/* Floating System Notification Toast */}
       {notification && (
         <div className="fixed top-20 right-4 z-50 max-w-sm animate-in slide-in-from-top-3 fade-in duration-200">
           <div
             className={`flex items-start space-x-2.5 p-3 rounded-xl backdrop-blur-xl border shadow-2xl text-xs ${
               notification.type === "success"
-                ? "bg-emerald-950/80 border-emerald-500/30 text-emerald-200"
-                : "bg-surface-200/90 border-brand-cyan/30 text-slate-200"
+                ? "bg-emerald-950/90 border-emerald-500/30 text-emerald-200"
+                : "bg-obsidian-900/90 border-brand-cyan/30 text-slate-200"
             }`}
           >
             {notification.type === "success" ? (
@@ -374,54 +399,54 @@ export default function NexoraApp() {
             ) : (
               <Info className="w-4 h-4 text-brand-cyan shrink-0 mt-0.5" />
             )}
-            <span className="leading-relaxed">{notification.text}</span>
+            <span className="leading-relaxed font-light">{notification.text}</span>
           </div>
         </div>
       )}
 
-      {/* Persistent View Nav Bar if a Plan exists */}
+      {/* System Navigation Ribbon (when a plan exists and not in focus mode) */}
       {session.plan && session.currentView !== "focus" && (
         <div className="max-w-4xl mx-auto w-full px-4 pt-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <button
               onClick={() => switchView("command")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono tracking-wider transition ${
                 session.currentView === "command"
-                  ? "bg-white/[0.1] text-white font-semibold border border-white/[0.12]"
+                  ? "bg-white/[0.08] text-white font-semibold border border-white/[0.12]"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              Command Center
+              COMMAND CENTER
             </button>
             <button
               onClick={() => switchView("plan")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono tracking-wider transition ${
                 session.currentView === "plan"
-                  ? "bg-white/[0.1] text-white font-semibold border border-white/[0.12]"
+                  ? "bg-white/[0.08] text-white font-semibold border border-white/[0.12]"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              Plan Breakdown
+              PLAN BREAKDOWN
             </button>
             {session.completedTaskIds.length > 0 && (
               <button
                 onClick={() => switchView("summary")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono transition ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono tracking-wider transition ${
                   session.currentView === "summary"
-                    ? "bg-white/[0.1] text-white font-semibold border border-white/[0.12]"
+                    ? "bg-white/[0.08] text-white font-semibold border border-white/[0.12]"
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                Session Summary
+                SESSION SUMMARY
               </button>
             )}
           </div>
 
           <button
             onClick={() => handleStartPlan()}
-            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-brand-cyan/15 hover:bg-brand-cyan text-brand-cyan hover:text-slate-950 border border-brand-cyan/30 transition flex items-center space-x-1.5"
+            className="px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold bg-brand-cyan/15 hover:bg-brand-cyan text-brand-cyan hover:text-slate-950 border border-brand-cyan/30 transition flex items-center space-x-1.5"
           >
-            <span>Resume Focus</span>
+            <span>RESUME FOCUS</span>
           </button>
         </div>
       )}
@@ -434,29 +459,30 @@ export default function NexoraApp() {
             <CommandInput
               onSubmit={handleExecuteCommand}
               isProcessing={isProcessing}
+              processingStep={processingStep}
               hasExistingPlan={Boolean(session.plan)}
               lastQuery={session.lastQuery}
               completedCount={session.completedTaskIds.length}
             />
 
-            {/* Quick Link to Current Plan if One Exists */}
+            {/* Quick Status Pill for Active Plan in Memory */}
             {session.plan && (
               <div className="max-w-3xl mx-auto px-4 mt-6">
-                <div className="glass-panel p-4 rounded-xl border-white/[0.08] flex items-center justify-between">
+                <div className="surface-obsidian p-4 rounded-xl border-white/[0.06] flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-brand-cyan">
-                      Active Plan In Memory
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-brand-cyan block">
+                      ACTIVE PLAN IN MEMORY
                     </span>
-                    <p className="text-sm font-semibold text-white">
-                      {session.plan.tasks.length} tasks &bull; {session.plan.totalMinutes} mins total &bull;{" "}
-                      {session.completedTaskIds.length} completed
+                    <p className="text-xs sm:text-sm font-semibold text-white font-mono uppercase mt-0.5">
+                      {session.plan.tasks.length} OBJECTIVES &bull; {session.plan.totalMinutes} MIN &bull;{" "}
+                      {session.completedTaskIds.length} EXECUTED
                     </p>
                   </div>
                   <button
                     onClick={() => switchView("plan")}
-                    className="px-3 py-1.5 rounded-lg bg-white/[0.08] hover:bg-white/[0.15] text-xs font-medium text-white transition"
+                    className="px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-xs font-mono tracking-wider text-white transition"
                   >
-                    View Plan &rarr;
+                    VIEW PLAN &rarr;
                   </button>
                 </div>
               </div>
@@ -518,16 +544,21 @@ export default function NexoraApp() {
         />
       )}
 
-      {/* Footer */}
-      <footer className="w-full border-t border-white/[0.04] py-6 px-4 text-center text-xs text-slate-500 font-mono">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div>
-            <span className="text-slate-400 font-semibold">NEXORA</span> &mdash; Think less. Do more.
+      {/* Footer — Minimalist System Signature */}
+      <footer className="w-full border-t border-white/[0.06] py-8 px-4 mt-12 bg-obsidian-950/60 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] text-slate-500">
+          <div className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-3">
+            <span className="font-bold text-slate-300 tracking-widest uppercase">NEXORA</span>
+            <span className="hidden sm:inline text-slate-600">&bull;</span>
+            <span className="tracking-wider uppercase text-slate-400">Think less. Do more.</span>
           </div>
-          <div className="flex items-center space-x-3 text-[11px] text-slate-600">
-            <span>Built for Build, Ship, Shape: Amazon Developer Hackathon</span>
-            <span>&bull;</span>
-            <span>Local Reasoning Engine Active</span>
+
+          <div className="flex items-center space-x-3 text-slate-500 tracking-widest uppercase">
+            <span>SYSTEM v1.0</span>
+            <span className="text-slate-700">&bull;</span>
+            <span className="text-brand-cyan">LOCAL-FIRST</span>
+            <span className="text-slate-700">&bull;</span>
+            <span>PRIVATE BY DESIGN</span>
           </div>
         </div>
       </footer>

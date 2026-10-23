@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Mic, MicOff, Send, Sparkles, ArrowRight, CornerDownLeft, Loader2 } from "lucide-react";
+import { Mic, MicOff, ArrowRight, CornerDownLeft, Sparkles, Terminal, Cpu } from "lucide-react";
 import { createSpeechListener, isSpeechRecognitionSupported } from "@/lib/speech";
 
 interface CommandInputProps {
   onSubmit: (command: string) => void;
   isProcessing: boolean;
+  processingStep?: "received" | "understanding" | "synthesizing";
   hasExistingPlan: boolean;
   lastQuery?: string;
   completedCount: number;
@@ -18,9 +19,8 @@ export const DEMO_PROMPT =
 export function CommandInput({
   onSubmit,
   isProcessing,
+  processingStep = "received",
   hasExistingPlan,
-  lastQuery,
-  completedCount,
 }: CommandInputProps) {
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
@@ -42,7 +42,7 @@ export function CommandInput({
     }
 
     if (!speechSupported) {
-      setSpeechError("Speech recognition is not supported in this browser. Please type your command.");
+      setSpeechError("Voice input is not supported in this browser. Please type your command.");
       return;
     }
 
@@ -86,7 +86,7 @@ export function CommandInput({
     }
   };
 
-  const triggerQuickPrompt = (prompt: string) => {
+  const triggerPrompt = (prompt: string) => {
     setInput(prompt);
     inputRef.current?.focus();
     onSubmit(prompt);
@@ -96,36 +96,67 @@ export function CommandInput({
     <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
       {/* Hero Header */}
       <div className="text-center mb-8 px-4">
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-slate-300 text-xs mb-4 backdrop-blur-md">
-          <Sparkles className="w-3.5 h-3.5 text-brand-cyan" />
-          <span>Simulated Conversational Command Center</span>
+        {/* Subtle System Status Pill */}
+        <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] text-slate-300 text-xs mb-4 backdrop-blur-md">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse"></span>
+          <span className="font-mono text-[11px] tracking-wider text-slate-400 uppercase">
+            AUTONOMOUS COMMAND SURFACE
+          </span>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-3">
-          What&apos;s on your mind?
+
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white mb-3">
+          Tell me what you&apos;re dealing with.
         </h1>
-        <p className="text-slate-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-          Tell NEXORA what you&apos;re dealing with. It will turn your natural-language situation
-          into your next best actions.
+        <p className="text-slate-400 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
+          NEXORA turns context into your next best action.
         </p>
       </div>
 
-      {/* Main Command Input Box */}
+      {/* Main Command Surface (Hero Component) */}
       <form onSubmit={handleSubmit} className="w-full px-4 mb-6">
         <div
-          className={`relative rounded-2xl glass-panel p-2 sm:p-3 transition-all duration-300 ${
+          className={`relative rounded-2xl surface-obsidian command-glow-border p-3 sm:p-4 transition-all duration-300 ${
             isListening
-              ? "border-brand-cyan/60 shadow-glow-cyan"
-              : "hover:border-white/20 focus-within:border-brand-cyan/50 focus-within:shadow-glow-cyan"
+              ? "border-brand-cyan/60 shadow-telemetry-active"
+              : isProcessing
+              ? "border-brand-cyan/40 shadow-telemetry"
+              : "hover:border-white/15 focus-within:border-brand-cyan/40 focus-within:shadow-telemetry"
           }`}
         >
-          {/* Active Listening Indicator */}
+          {/* Active Voice Listening Pill */}
           {isListening && (
             <div className="flex items-center space-x-2 px-3 py-1.5 mb-2 bg-brand-cyan/10 border border-brand-cyan/20 rounded-lg text-brand-cyan text-xs">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-cyan opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-cyan"></span>
               </span>
-              <span className="font-medium animate-pulse">Listening... Speak now</span>
+              <span className="font-mono font-medium">RECEIVING AUDIO INPUT...</span>
+            </div>
+          )}
+
+          {/* Thinking / Reasoning Micro-interaction Bar */}
+          {isProcessing && (
+            <div className="mb-3 p-3 rounded-xl bg-obsidian-900 border border-brand-cyan/30 flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <Cpu className="w-4 h-4 text-brand-cyan animate-spin" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-mono font-bold tracking-wider text-white uppercase">
+                    {processingStep === "received" && "COMMAND RECEIVED"}
+                    {processingStep === "understanding" && "UNDERSTANDING CONSTRAINTS..."}
+                    {processingStep === "synthesizing" && "BUILDING OPTIMAL PLAN..."}
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    {processingStep === "received" && "Parsing temporal markers & task weight"}
+                    {processingStep === "understanding" && "Priority mapped • Time budget constrained"}
+                    {processingStep === "synthesizing" && "Finalizing execution sequence"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex space-x-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-bounce" style={{ animationDelay: "300ms" }}></span>
+              </div>
             </div>
           )}
 
@@ -142,32 +173,33 @@ export function CommandInput({
                   : 'E.g. "I have Mathematics tomorrow, DBMS assignment due Friday, and two hours tonight..."'
               }
               disabled={isProcessing}
-              className="w-full bg-transparent text-slate-100 placeholder-slate-500 text-sm sm:text-base p-2 sm:p-3 resize-none outline-none focus:ring-0 leading-relaxed"
+              className="w-full bg-transparent text-slate-100 placeholder-slate-500 text-sm sm:text-base p-1 sm:p-2 resize-none outline-none focus:ring-0 leading-relaxed font-normal"
               aria-label="Natural-language situation or command"
             />
           </div>
 
           {/* Action Row */}
-          <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] px-2">
+          <div className="flex items-center justify-between pt-2.5 border-t border-white/[0.06] mt-1">
             <div className="flex items-center space-x-2">
-              {/* Mic Button */}
+              {/* Mic Visual Button */}
               <button
                 type="button"
                 onClick={handleToggleSpeech}
                 disabled={isProcessing}
                 className={`p-2 rounded-xl transition duration-200 flex items-center justify-center ${
                   isListening
-                    ? "bg-brand-cyan text-slate-950 shadow-glow-cyan animate-pulse"
-                    : "text-slate-400 hover:text-white hover:bg-white/[0.08]"
+                    ? "bg-brand-cyan text-slate-950 shadow-telemetry-active"
+                    : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
                 }`}
-                title={speechSupported ? "Speak your command" : "Microphone not supported in this browser"}
-                aria-label={isListening ? "Stop listening" : "Start voice input"}
+                title={speechSupported ? "Voice input" : "Voice input unavailable"}
+                aria-label={isListening ? "Stop voice input" : "Start voice input"}
               >
                 {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
               </button>
 
-              <span className="hidden sm:inline text-[11px] text-slate-500 font-mono">
-                Press Enter ↵ to send
+              <span className="hidden sm:flex items-center space-x-1 text-[11px] text-slate-500 font-mono">
+                <CornerDownLeft className="w-3 h-3" />
+                <span>Enter to execute</span>
               </span>
             </div>
 
@@ -175,24 +207,15 @@ export function CommandInput({
               <button
                 type="submit"
                 disabled={!input.trim() || isProcessing}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-medium flex items-center space-x-1.5 transition duration-200 ${
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-1.5 transition duration-200 ${
                   input.trim() && !isProcessing
-                    ? "bg-brand-cyan hover:bg-sky-400 text-slate-950 font-semibold shadow-glow-cyan cursor-pointer"
-                    : "bg-white/[0.05] text-slate-500 cursor-not-allowed"
+                    ? "bg-brand-cyan hover:bg-sky-400 text-slate-950 font-mono tracking-wider shadow-telemetry cursor-pointer"
+                    : "bg-white/[0.04] text-slate-600 font-mono tracking-wider cursor-not-allowed border border-white/[0.04]"
                 }`}
-                aria-label="Submit command"
+                aria-label="Execute command"
               >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Reasoning...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Execute</span>
-                    <Send className="w-3.5 h-3.5" />
-                  </>
-                )}
+                <span>{isProcessing ? "PROCESSING..." : "EXECUTE"}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -213,81 +236,83 @@ export function CommandInput({
         )}
       </form>
 
-      {/* Demo Scenario Highlight Card */}
+      {/* Featured LIVE DEMO Capsule */}
       <div className="w-full px-4 mb-6">
-        <div className="glass-panel p-4 rounded-xl border-brand-cyan/20 bg-gradient-to-r from-brand-cyan/[0.03] to-brand-indigo/[0.03] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="surface-obsidian p-4 rounded-xl border-brand-cyan/25 bg-gradient-to-r from-brand-cyan/[0.04] to-brand-indigo/[0.04] flex flex-col sm:flex-row sm:items-center justify-between gap-3 group hover:border-brand-cyan/40 transition">
           <div className="flex items-start space-x-3">
-            <div className="p-2 rounded-lg bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20 shrink-0">
-              <Sparkles className="w-4 h-4" />
+            <div className="p-2 rounded-lg bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20 shrink-0 mt-0.5">
+              <Terminal className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-mono font-semibold tracking-wider text-brand-cyan uppercase">
-                  Featured Hackathon Scenario
+                <span className="text-[10px] font-mono font-bold tracking-widest text-brand-cyan uppercase">
+                  LIVE SCENARIO
                 </span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20 font-mono">
-                  Recommended
-                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-300 mt-0.5 line-clamp-1 italic">
+              <p className="text-xs sm:text-sm text-slate-200 mt-0.5 line-clamp-1 italic font-light">
                 &ldquo;{DEMO_PROMPT}&rdquo;
               </p>
             </div>
           </div>
           <button
             type="button"
-            onClick={() => triggerQuickPrompt(DEMO_PROMPT)}
+            onClick={() => triggerPrompt(DEMO_PROMPT)}
             disabled={isProcessing}
-            className="shrink-0 px-3.5 py-2 rounded-lg bg-white/[0.08] hover:bg-brand-cyan hover:text-slate-950 text-slate-200 text-xs font-semibold border border-white/[0.1] hover:border-brand-cyan transition duration-200 flex items-center justify-center space-x-1.5 shadow-sm"
+            className="shrink-0 px-4 py-2 rounded-lg bg-brand-cyan/15 hover:bg-brand-cyan hover:text-slate-950 text-brand-cyan text-xs font-mono font-bold tracking-wider border border-brand-cyan/30 hover:border-brand-cyan transition duration-200 flex items-center justify-center space-x-2 shadow-sm"
           >
-            <span>Try the demo scenario</span>
+            <span>RUN SCENARIO</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Suggested Follow-ups & Fast Actions */}
+      {/* Quick Prompts (Command Suggestions) */}
       <div className="w-full px-4">
-        <p className="text-xs font-mono text-slate-500 uppercase tracking-wider mb-2.5">
-          {hasExistingPlan ? "Context-Aware Follow-ups" : "Or Try Saying"}
-        </p>
+        <div className="flex items-center space-x-2 mb-2.5">
+          <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+            {hasExistingPlan ? "CONTEXT-AWARE COMMANDS" : "COMMAND SUGGESTIONS"}
+          </span>
+          <div className="flex-1 h-[1px] bg-white/[0.04]"></div>
+        </div>
+
         <div className="flex flex-wrap gap-2">
           {hasExistingPlan ? (
             <>
               <button
                 type="button"
-                onClick={() => triggerQuickPrompt("What should I do next?")}
+                onClick={() => triggerPrompt("What should I do next?")}
                 disabled={isProcessing}
-                className="px-3 py-1.5 rounded-lg text-xs glass-pill hover:bg-white/[0.1] text-brand-cyan border-brand-cyan/30 hover:border-brand-cyan transition flex items-center space-x-1.5"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono system-pill text-brand-cyan hover:border-brand-cyan transition flex items-center space-x-1.5"
               >
-                <span>&ldquo;What should I do next?&rdquo;</span>
+                <span>&ldquo;WHAT SHOULD I DO NEXT?&rdquo;</span>
                 <CornerDownLeft className="w-3 h-3 opacity-60" />
               </button>
               <button
                 type="button"
-                onClick={() => triggerQuickPrompt("I finished Maths.")}
+                onClick={() => triggerPrompt("I finished Maths.")}
                 disabled={isProcessing}
-                className="px-3 py-1.5 rounded-lg text-xs glass-pill hover:bg-white/[0.1] text-emerald-400 border-emerald-500/30 hover:border-emerald-400 transition flex items-center space-x-1.5"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono system-pill text-emerald-400 hover:border-emerald-400 transition flex items-center space-x-1.5"
               >
-                <span>&ldquo;I finished Maths.&rdquo;</span>
+                <span>&ldquo;I FINISHED MATHS.&rdquo;</span>
                 <CornerDownLeft className="w-3 h-3 opacity-60" />
               </button>
               <button
                 type="button"
-                onClick={() => triggerQuickPrompt("I only have 30 minutes.")}
+                onClick={() => triggerPrompt("I only have 30 minutes.")}
                 disabled={isProcessing}
-                className="px-3 py-1.5 rounded-lg text-xs glass-pill hover:bg-white/[0.1] text-amber-400 border-amber-500/30 hover:border-amber-400 transition flex items-center space-x-1.5"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono system-pill text-amber-400 hover:border-amber-400 transition flex items-center space-x-1.5"
               >
-                <span>&ldquo;I only have 30 minutes.&rdquo;</span>
+                <span>&ldquo;I ONLY HAVE 30 MINUTES.&rdquo;</span>
                 <CornerDownLeft className="w-3 h-3 opacity-60" />
               </button>
               <button
                 type="button"
-                onClick={() => triggerQuickPrompt("Move DBMS to tomorrow.")}
+                onClick={() => triggerPrompt("Move DBMS to tomorrow.")}
                 disabled={isProcessing}
-                className="px-3 py-1.5 rounded-lg text-xs glass-pill hover:bg-white/[0.1] text-slate-300 hover:text-white transition flex items-center space-x-1.5"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono system-pill text-slate-300 hover:text-white transition flex items-center space-x-1.5"
               >
-                <span>&ldquo;Move DBMS to tomorrow.&rdquo;</span>
+                <span>&ldquo;MOVE DBMS TO TOMORROW.&rdquo;</span>
                 <CornerDownLeft className="w-3 h-3 opacity-60" />
               </button>
             </>
@@ -295,35 +320,31 @@ export function CommandInput({
             <>
               <button
                 type="button"
-                onClick={() =>
-                  triggerQuickPrompt(
-                    "I have an AI project presentation in 3 hours and I haven't rehearsed the demo yet."
-                  )
-                }
+                onClick={() => triggerPrompt("Plan my evening: Maths exam tomorrow and two hours tonight.")}
                 disabled={isProcessing}
-                className="px-3 py-1.5 rounded-lg text-xs glass-pill hover:bg-white/[0.1] text-slate-300 hover:text-white transition"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono system-pill text-slate-300 hover:text-white hover:border-brand-cyan/40 transition"
               >
-                &ldquo;AI project presentation in 3 hours...&rdquo;
+                PLAN MY EVENING
               </button>
               <button
                 type="button"
                 onClick={() =>
-                  triggerQuickPrompt(
-                    "Physics test tomorrow, Chemistry notes to review, and only 90 minutes tonight."
-                  )
+                  triggerPrompt("I'm running out of time. Urgent Physics test tomorrow and 45 minutes left.")
                 }
                 disabled={isProcessing}
-                className="px-3 py-1.5 rounded-lg text-xs glass-pill hover:bg-white/[0.1] text-slate-300 hover:text-white transition"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono system-pill text-slate-300 hover:text-white hover:border-brand-cyan/40 transition"
               >
-                &ldquo;Physics test tomorrow, 90 mins tonight...&rdquo;
+                I&apos;M RUNNING OUT OF TIME
               </button>
               <button
                 type="button"
-                onClick={() => triggerQuickPrompt("I'm feeling overwhelmed. Give me a 45-minute focused reset.")}
+                onClick={() =>
+                  triggerPrompt("AI presentation in 3 hours. Need a focused rehearsal schedule.")
+                }
                 disabled={isProcessing}
-                className="px-3 py-1.5 rounded-lg text-xs glass-pill hover:bg-white/[0.1] text-slate-300 hover:text-white transition"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-mono system-pill text-slate-300 hover:text-white hover:border-brand-cyan/40 transition"
               >
-                &ldquo;45-minute focused reset...&rdquo;
+                PREPARE PRESENTATION
               </button>
             </>
           )}

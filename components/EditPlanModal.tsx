@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Trash2, Plus, Minus, Clock, Check, AlertCircle } from "lucide-react";
+import { X, Trash2, Plus, Minus, Clock, Check, AlertCircle, Sliders } from "lucide-react";
 import { Task } from "@/types";
 
 interface EditPlanModalProps {
@@ -14,7 +14,6 @@ interface EditPlanModalProps {
 export function EditPlanModal({ tasks, isOpen, onClose, onSave }: EditPlanModalProps) {
   const [editableTasks, setEditableTasks] = useState<Task[]>(tasks);
 
-  // Sync state when opened
   React.useEffect(() => {
     setEditableTasks(tasks);
   }, [tasks, isOpen]);
@@ -34,7 +33,7 @@ export function EditPlanModal({ tasks, isOpen, onClose, onSave }: EditPlanModalP
   };
 
   const handleRemoveTask = (taskId: string) => {
-    if (editableTasks.length <= 1) return; // Keep at least one task
+    if (editableTasks.length <= 1) return;
     setEditableTasks((prev) => prev.filter((t) => t.id !== taskId));
   };
 
@@ -47,11 +46,11 @@ export function EditPlanModal({ tasks, isOpen, onClose, onSave }: EditPlanModalP
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="glass-panel w-full max-w-xl rounded-2xl border-white/[0.1] bg-surface-300 shadow-2xl p-6 overflow-hidden"
+        className="surface-obsidian w-full max-w-xl rounded-2xl border-white/[0.1] bg-obsidian-950 shadow-2xl p-6 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -59,17 +58,22 @@ export function EditPlanModal({ tasks, isOpen, onClose, onSave }: EditPlanModalP
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-4">
-          <div>
-            <h3 id="edit-plan-title" className="text-lg font-bold text-white tracking-tight">
-              Edit Execution Plan
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Adjust block durations or remove tasks to fit your exact availability.
-            </p>
+          <div className="flex items-center space-x-2.5">
+            <div className="p-1.5 rounded-lg bg-brand-cyan/10 border border-brand-cyan/20 text-brand-cyan">
+              <Sliders className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 id="edit-plan-title" className="text-base font-bold text-white tracking-wide uppercase font-mono">
+                EDIT EXECUTION PLAN
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5 font-light">
+                Adjust block durations or eliminate objectives to fit your schedule.
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.08] transition"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -81,15 +85,15 @@ export function EditPlanModal({ tasks, isOpen, onClose, onSave }: EditPlanModalP
           {editableTasks.map((task) => (
             <div
               key={task.id}
-              className="p-3.5 rounded-xl bg-surface-200/60 border border-white/[0.06] flex items-center justify-between gap-3"
+              className="p-3.5 rounded-xl bg-obsidian-900 border border-white/[0.06] flex items-center justify-between gap-3"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-semibold text-white truncate">
+                  <span className="text-sm font-semibold text-white uppercase font-mono truncate">
                     {task.title}
                   </span>
                   <span
-                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded uppercase ${
+                    className={`text-[9px] font-mono px-1.5 py-0.2 rounded uppercase ${
                       task.priority === "high"
                         ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                         : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
@@ -99,7 +103,7 @@ export function EditPlanModal({ tasks, isOpen, onClose, onSave }: EditPlanModalP
                   </span>
                 </div>
                 {task.subtitle && (
-                  <p className="text-xs text-slate-400 truncate mt-0.5">{task.subtitle}</p>
+                  <p className="text-xs text-slate-400 truncate mt-0.5 font-light">{task.subtitle}</p>
                 )}
               </div>
 
@@ -109,32 +113,32 @@ export function EditPlanModal({ tasks, isOpen, onClose, onSave }: EditPlanModalP
                   type="button"
                   onClick={() => handleDurationChange(task.id, -5)}
                   disabled={task.duration <= 5}
-                  className="w-7 h-7 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] disabled:opacity-30 disabled:cursor-not-allowed text-white flex items-center justify-center transition"
+                  className="w-7 h-7 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] disabled:opacity-30 disabled:cursor-not-allowed text-white flex items-center justify-center transition"
                   aria-label="Decrease 5 minutes"
                 >
                   <Minus className="w-3.5 h-3.5" />
                 </button>
 
-                <div className="w-16 text-center font-mono text-sm font-bold text-brand-cyan">
-                  {task.duration}m
+                <div className="w-14 text-center font-mono text-xs font-bold text-brand-cyan">
+                  {task.duration}M
                 </div>
 
                 <button
                   type="button"
                   onClick={() => handleDurationChange(task.id, 5)}
-                  className="w-7 h-7 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white flex items-center justify-center transition"
+                  className="w-7 h-7 rounded-lg bg-white/[0.04] hover:bg-white/[0.1] text-white flex items-center justify-center transition"
                   aria-label="Increase 5 minutes"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
 
-                {/* Remove Task Button */}
+                {/* Remove Task */}
                 <button
                   type="button"
                   onClick={() => handleRemoveTask(task.id)}
                   disabled={editableTasks.length <= 1}
                   className="p-1.5 rounded-lg text-rose-400/60 hover:text-rose-400 hover:bg-rose-500/10 transition disabled:opacity-20 disabled:cursor-not-allowed ml-1"
-                  title="Remove this task"
+                  title="Remove this objective"
                   aria-label={`Remove ${task.title}`}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -146,35 +150,35 @@ export function EditPlanModal({ tasks, isOpen, onClose, onSave }: EditPlanModalP
 
         {/* Warning if only 1 task */}
         {editableTasks.length <= 1 && (
-          <div className="mt-3 flex items-center space-x-1.5 text-xs text-amber-400/80">
+          <div className="mt-3 flex items-center space-x-1.5 text-xs text-amber-400/80 font-mono">
             <AlertCircle className="w-3.5 h-3.5" />
-            <span>At least one task is required in an active plan.</span>
+            <span>Minimum of one objective required in active plan.</span>
           </div>
         )}
 
-        {/* Footer / Total & Submit */}
+        {/* Footer / Total & Apply */}
         <div className="pt-4 mt-4 border-t border-white/[0.08] flex items-center justify-between">
           <div className="flex items-center space-x-1.5 text-xs font-mono text-slate-400">
             <Clock className="w-4 h-4 text-brand-cyan" />
-            <span>New total: </span>
-            <span className="text-white font-bold">{totalMinutes} mins</span>
+            <span>TOTAL TIME: </span>
+            <span className="text-white font-bold">{totalMinutes} MIN</span>
           </div>
 
           <div className="flex items-center space-x-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-white/[0.06] transition"
+              className="px-4 py-2 rounded-xl text-xs font-mono text-slate-400 hover:text-white transition"
             >
-              Cancel
+              CANCEL
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="px-5 py-2 rounded-xl text-xs font-bold bg-brand-cyan hover:bg-sky-400 text-slate-950 flex items-center space-x-1.5 shadow-glow-cyan transition duration-200"
+              className="px-5 py-2 rounded-xl text-xs font-mono font-bold bg-brand-cyan hover:bg-sky-400 text-slate-950 flex items-center space-x-1.5 shadow-telemetry transition duration-200"
             >
-              <Check className="w-4 h-4" />
-              <span>Apply Changes</span>
+              <Check className="w-4 h-4 stroke-[2.5]" />
+              <span>APPLY CHANGES</span>
             </button>
           </div>
         </div>

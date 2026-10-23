@@ -1,79 +1,183 @@
 "use client";
 
 import React from "react";
-import { Sparkles, RotateCcw, Activity } from "lucide-react";
+import { RotateCcw } from "lucide-react";
+
+export type SystemStatusState = "online" | "thinking" | "ready" | "focus";
 
 interface HeaderProps {
-  onReset: () => void;
+  systemStatus?: SystemStatusState;
   hasActiveContext: boolean;
   completedCount: number;
+  onReset: () => void;
 }
 
-export function Header({ onReset, hasActiveContext, completedCount }: HeaderProps) {
+export function Header({
+  systemStatus = "online",
+  hasActiveContext,
+  completedCount,
+  onReset,
+}: HeaderProps) {
+  const getStatusBadge = () => {
+    switch (systemStatus) {
+      case "thinking":
+        return {
+          label: "THINKING",
+          dotColor: "bg-brand-cyan",
+          pingColor: "bg-brand-cyan",
+          textColor: "text-brand-cyan",
+          borderColor: "border-brand-cyan/40",
+          bgColor: "bg-brand-cyan/10",
+        };
+      case "focus":
+        return {
+          label: "FOCUS ACTIVE",
+          dotColor: "bg-brand-electric",
+          pingColor: "bg-brand-electric",
+          textColor: "text-brand-electric",
+          borderColor: "border-brand-cyan/40",
+          bgColor: "bg-brand-cyan/15",
+        };
+      case "ready":
+        return {
+          label: "READY",
+          dotColor: "bg-emerald-400",
+          pingColor: "bg-emerald-400",
+          textColor: "text-emerald-400",
+          borderColor: "border-emerald-500/30",
+          bgColor: "bg-emerald-500/10",
+        };
+      default:
+        return {
+          label: "ONLINE",
+          dotColor: "bg-brand-cyan",
+          pingColor: "bg-brand-cyan",
+          textColor: "text-slate-300",
+          borderColor: "border-white/[0.08]",
+          bgColor: "bg-white/[0.03]",
+        };
+    }
+  };
+
+  const status = getStatusBadge();
+
   return (
-    <header className="w-full border-b border-white/[0.06] bg-surface-300/60 backdrop-blur-md sticky top-0 z-40 transition-all">
+    <header className="w-full border-b border-white/[0.06] bg-obsidian-950/80 backdrop-blur-xl sticky top-0 z-40 transition-all duration-300">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Brand Wordmark */}
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-cyan via-brand-indigo to-brand-violet p-[1px] flex items-center justify-center shadow-glow-cyan">
-            <div className="w-full h-full bg-surface-300 rounded-[7px] flex items-center justify-center">
-              <span className="text-brand-cyan text-sm font-bold tracking-wider">N</span>
-            </div>
+        {/* Brand System Identity */}
+        <div className="flex items-center space-x-3.5">
+          {/* Refined NEXORA Neural Aperture Symbol */}
+          <div className="relative w-8 h-8 flex items-center justify-center shrink-0">
+            <svg
+              viewBox="0 0 32 32"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-8 h-8 drop-shadow-[0_0_8px_rgba(56,189,248,0.4)]"
+            >
+              {/* Outer hexagonal technical aperture */}
+              <polygon
+                points="16,3 28,10 28,22 16,29 4,22 4,10"
+                stroke="rgba(56, 189, 248, 0.35)"
+                strokeWidth="1.2"
+                strokeDasharray="2 3"
+              />
+              {/* Inner stylized geometric 'N' neural path */}
+              <path
+                d="M9 22V10L23 22V10"
+                stroke="url(#nexora-gradient)"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              {/* Neural pulse nodes */}
+              <circle cx="9" cy="10" r="1.5" fill="#38BDF8" />
+              <circle cx="16" cy="16" r="1.5" fill="#00E5FF" />
+              <circle cx="23" cy="22" r="1.5" fill="#818CF8" />
+
+              <defs>
+                <linearGradient id="nexora-gradient" x1="9" y1="10" x2="23" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#38BDF8" />
+                  <stop offset="0.5" stopColor="#00E5FF" />
+                  <stop offset="1" stopColor="#818CF8" />
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
-          <div>
+
+          {/* Wordmark & Tagline */}
+          <div className="flex flex-col">
             <div className="flex items-center space-x-2">
-              <span className="font-semibold text-lg tracking-wider text-white">NEXORA</span>
-              <span className="hidden sm:inline-block text-[11px] font-mono tracking-wide px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20">
-                v1.0 MVP
+              <span className="font-bold text-base sm:text-lg tracking-widest text-white uppercase font-mono">
+                NEXORA
+              </span>
+              <span className="text-[9px] font-mono tracking-wider px-1.5 py-0.5 rounded bg-white/[0.04] text-slate-400 border border-white/[0.06] hidden sm:inline-block">
+                SYS.OS
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-mono tracking-tight hidden md:block">
+            <span className="text-[10px] font-mono tracking-wider text-slate-400 uppercase hidden md:block">
               Think less. Do more.
-            </p>
+            </span>
           </div>
         </div>
 
-        {/* Status Indicators & Controls */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          {/* Status Badge */}
-          <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        {/* System Telemetry & Console Status */}
+        <div className="flex items-center space-x-3 sm:space-x-5">
+          {/* SYSTEM TELEMETRY */}
+          <div className="flex items-center space-x-2">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 hidden lg:inline">
+              SYSTEM
             </span>
-            <span className="font-medium tracking-wide">READY</span>
+            <div
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono tracking-wider border ${status.bgColor} ${status.borderColor} ${status.textColor}`}
+            >
+              <span className="relative flex h-2 w-2">
+                <span
+                  className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${status.pingColor}`}
+                ></span>
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${status.dotColor}`}></span>
+              </span>
+              <span className="font-semibold">{status.label}</span>
+            </div>
           </div>
 
-          {/* Context Badge */}
-          {hasActiveContext ? (
+          {/* CONTEXT STATUS */}
+          <div className="flex items-center space-x-2">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 hidden lg:inline">
+              CONTEXT
+            </span>
             <div
-              className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-medium"
-              title="Session memory active across page reloads"
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono tracking-wider border ${
+                hasActiveContext
+                  ? "bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan"
+                  : "bg-white/[0.02] border-white/[0.06] text-slate-400"
+              }`}
+              title={hasActiveContext ? "Session memory active across reloads" : "No active session in memory"}
             >
-              <Activity className="w-3.5 h-3.5 animate-pulse text-brand-cyan" />
-              <span className="hidden sm:inline">Session context active</span>
-              {completedCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 rounded-full bg-brand-cyan/20 text-[10px] font-mono font-bold">
-                  {completedCount} done
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  hasActiveContext ? "bg-brand-cyan animate-pulse" : "bg-slate-600"
+                }`}
+              />
+              <span className="font-medium">
+                {hasActiveContext ? "ACTIVE" : "STANDBY"}
+              </span>
+              {hasActiveContext && completedCount > 0 && (
+                <span className="ml-0.5 px-1 rounded text-[9px] font-bold bg-brand-cyan/20 text-brand-cyan">
+                  {completedCount}
                 </span>
               )}
             </div>
-          ) : (
-            <div className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-slate-800/60 border border-slate-700/50 text-slate-400 text-xs">
-              <Sparkles className="w-3.5 h-3.5 text-slate-400" />
-              <span>Standby</span>
-            </div>
-          )}
+          </div>
 
-          {/* Reset Session */}
+          {/* CONSOLE RESET */}
           <button
             onClick={onReset}
-            className="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent hover:border-white/[0.08] transition text-xs font-mono"
-            title="Reset session memory"
-            aria-label="Reset session memory"
+            className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono text-slate-400 hover:text-white bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] transition"
+            title="Purge session memory"
+            aria-label="Purge session memory"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Reset</span>
+            <RotateCcw className="w-3 h-3" />
+            <span className="hidden sm:inline tracking-wider">RESET</span>
           </button>
         </div>
       </div>

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #07080b;
+  --background: #050608;
   --foreground: #f1f5f9;
 }
 
@@ -16,63 +16,115 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbar */
+/* Custom technical scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(5, 6, 8, 0.8);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(56, 189, 248, 0.2);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(56, 189, 248, 0.4);
 }
 
-/* Glassmorphism helpers */
-.glass-panel {
-  background: rgba(17, 21, 30, 0.7);
+/* Cinematic Technical Background */
+.cinematic-environment {
+  position: relative;
+  background-color: #050608;
+  background-image:
+    /* Barely visible technical micro-grid */
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    /* Soft ambient radial fields */
+    radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.07) 0%, transparent 60%),
+    radial-gradient(circle at 80% 25%, rgba(99, 102, 241, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 20% 75%, rgba(14, 165, 233, 0.03) 0%, transparent 55%);
+  background-size: 32px 32px, 32px 32px, 100% 100%, 100% 100%, 100% 100%;
+}
+
+/* Intelligent Glass & Obsidian Surfaces */
+.surface-obsidian {
+  background: rgba(13, 16, 23, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.surface-obsidian-active {
+  background: rgba(18, 22, 32, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.7), 0 0 25px -5px rgba(56, 189, 248, 0.15);
+}
+
+.surface-interactive {
+  background: rgba(13, 16, 23, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.glass-panel-interactive {
-  background: rgba(17, 21, 30, 0.6);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+.surface-interactive:hover {
+  background: rgba(19, 24, 35, 0.85);
+  border-color: rgba(56, 189, 248, 0.25);
+  transform: translateY(-1.5px);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.6), 0 0 20px -5px rgba(56, 189, 248, 0.12);
 }
 
-.glass-panel-interactive:hover {
-  background: rgba(24, 29, 42, 0.8);
+.system-pill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+}
+
+.system-pill:hover {
+  background: rgba(255, 255, 255, 0.06);
   border-color: rgba(56, 189, 248, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 20px -5px rgba(56, 189, 248, 0.15);
+  transform: translateY(-1px);
 }
 
-.glass-pill {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Technical System Dividers */
+.technical-divider {
+  position: relative;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.08) 20%, rgba(56, 189, 248, 0.25) 50%, rgba(255, 255, 255, 0.08) 80%, transparent 100%);
 }
 
-/* Radiant glow background */
-.radial-mesh {
-  background-image: 
-    radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.05) 0%, transparent 45%),
-    radial-gradient(circle at 15% 70%, rgba(139, 92, 246, 0.04) 0%, transparent 45%);
+/* Subtle Animated Laser Beam for Input Focus */
+.command-glow-border {
+  position: relative;
+}
+.command-glow-border::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 1.25rem;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.4), rgba(99, 102, 241, 0.1), rgba(56, 189, 248, 0.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.command-glow-border:focus-within::after {
+  opacity: 1;
 }
 
-/* Focus styles for accessibility */
+/* Focus styles for keyboard navigation */
 *:focus-visible {
   outline: 2px solid #38bdf8;
   outline-offset: 2px;
