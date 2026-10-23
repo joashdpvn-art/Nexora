@@ -335,8 +335,8 @@ export function analyzeQuery(query: string): {
   };
 
   const summary = subjects.length >= 2
-    ? `You're not out of time. You're out of room for low-value work. I found ${availableMinutes} minutes tonight. I'm protecting ${tasks[0].duration} minutes for ${subjects[0].name} to guarantee mastery before tomorrow, then securing ${subjects[1]?.name || 'next priority'} in a controlled sprint. Let's execute.`
-    : `I found ${availableMinutes} minutes tonight. I've isolated a clean deep-work block for ${subjects[0].name}. We're cutting non-essential friction to secure results. Let's execute.`;
+    ? `I found ${availableMinutes} usable minutes tonight. ${subjects[0].name} is your highest-risk objective—I'm protecting ${tasks[0].duration} minutes for it to guarantee tomorrow's mastery. ${subjects[1]?.name || 'Secondary priorities'} can be compressed into a controlled sprint without compromising tomorrow. You're not out of time. You're out of room for low-value work.`
+    : `I found ${availableMinutes} usable minutes. I've isolated an uninterrupted deep-work corridor for ${subjects[0].name}. We're cutting low-value friction to lock down results. Let's execute.`;
 
   return { context, tasks, summary, reasoning };
 }
@@ -386,7 +386,7 @@ export function handleFollowUp(
     return {
       type: "START_TASK",
       taskId: next.id,
-      message: `Your next priority is **${next.title}** (${next.duration} mins). ${next.reason || "Let's dive in!"}`,
+      message: `Your next high-leverage objective is **${next.title}** (${next.duration} mins). ${next.reason || "Let's execute."}`,
     };
   }
 
@@ -401,7 +401,7 @@ export function handleFollowUp(
     if (!plan) {
       return {
         type: "MESSAGE_ONLY",
-        message: "Great job! To track your progress, create a plan with me first.",
+        message: "No active session in memory. Give me your objectives, and I will construct an optimal plan.",
       };
     }
 
@@ -431,10 +431,10 @@ export function handleFollowUp(
         type: "MARK_COMPLETED",
         taskId: matchedTask.id,
         nextTaskId: nextTask?.id,
-        message: `Marked **${matchedTask.title}** as complete! ${
+        message: `Marked **${matchedTask.title}** as complete. ${
           nextTask
-            ? `Next up is **${nextTask.title}** (${nextTask.duration} mins). Ready when you are.`
-            : "That wraps up all planned tasks for tonight. Outstanding focus!"
+            ? `Advancing to **${nextTask.title}** (${nextTask.duration} mins). DBMS can be compressed without compromising tomorrow's priority.`
+            : "All scheduled objectives for tonight are secured. Outstanding execution."
         }`,
       };
     }
@@ -465,7 +465,7 @@ export function handleFollowUp(
           type: "RESCHEDULE_TIME",
           newTotalMinutes: newMinutes,
           updatedTasks: updated,
-          message: `Adjusted your remaining schedule to fit **${newMinutes} minutes**. Durations have been intelligently compressed while preserving high-priority coverage.`,
+          message: `Recalibrated your remaining time to **${newMinutes} minutes**. Low-value friction eliminated; core deliverables protected.`,
         };
       }
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, Clock, ArrowRight, RotateCcw, Award, Layers } from "lucide-react";
+import { CheckCircle2, Clock, ArrowRight, RotateCcw } from "lucide-react";
 import { Plan } from "@/types";
 
 interface SessionSummaryProps {
@@ -41,86 +41,58 @@ export function SessionSummary({
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 py-8 text-center animate-in fade-in duration-300">
-      {/* Telemetry Badge */}
-      <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-mono tracking-wider mb-4">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-        <span className="uppercase">SPRINT COMPLETE</span>
+    <div className="w-full max-w-3xl mx-auto px-4 py-12 text-center animate-in fade-in duration-300">
+      {/* Telemetry Header */}
+      <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono tracking-widest uppercase mb-4">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+        <span>SPRINT COMPLETE</span>
       </div>
 
       <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase font-mono mb-2">
         MOMENTUM UNLOCKED.
       </h1>
 
-      <p className="text-slate-400 text-xs sm:text-sm max-w-md mx-auto mb-8 font-light leading-relaxed">
+      <p className="text-slate-400 text-xs sm:text-sm max-w-md mx-auto mb-10 font-light leading-relaxed">
         NEXORA has converted your available time into completed action.
       </p>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-        <div className="surface-obsidian p-4 rounded-xl border-white/[0.06]">
-          <div className="flex items-center justify-center space-x-1.5 text-[10px] font-mono uppercase text-slate-500 mb-1">
-            <Clock className="w-3 h-3 text-brand-cyan" />
-            <span>FOCUS TIME</span>
-          </div>
-          <p className="text-2xl font-black text-brand-cyan font-mono">
-            {totalMinutesSpent} MIN
-          </p>
+      {/* Clean Telemetry Strip (No Repetitive Cards) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 py-6 border-y border-white/[0.06] mb-10 font-mono text-center gap-6">
+        <div>
+          <span className="text-[10px] text-slate-500 uppercase tracking-widest block mb-1">FOCUS TIME</span>
+          <span className="text-2xl sm:text-3xl font-black text-brand-cyan">{totalMinutesSpent} MIN</span>
         </div>
-
-        <div className="surface-obsidian p-4 rounded-xl border-white/[0.06]">
-          <div className="flex items-center justify-center space-x-1.5 text-[10px] font-mono uppercase text-slate-500 mb-1">
-            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-            <span>COMPLETED</span>
-          </div>
-          <p className="text-2xl font-black text-white font-mono">
-            {completedTasks.length} / {plan.tasks.length}
-          </p>
+        <div>
+          <span className="text-[10px] text-slate-500 uppercase tracking-widest block mb-1">COMPLETED</span>
+          <span className="text-2xl sm:text-3xl font-black text-white">{completedTasks.length} / {plan.tasks.length}</span>
         </div>
-
-        <div className="surface-obsidian p-4 rounded-xl border-white/[0.06]">
-          <div className="flex items-center justify-center space-x-1.5 text-[10px] font-mono uppercase text-slate-500 mb-1">
-            <Award className="w-3 h-3 text-amber-400" />
-            <span>PROGRESS</span>
-          </div>
-          <p className="text-2xl font-black text-amber-400 font-mono">
-            {completionPercentage}%
-          </p>
+        <div>
+          <span className="text-[10px] text-slate-500 uppercase tracking-widest block mb-1">PROGRESS</span>
+          <span className="text-2xl sm:text-3xl font-black text-emerald-400">{completionPercentage}%</span>
         </div>
-
-        <div className="surface-obsidian p-4 rounded-xl border-white/[0.06]">
-          <div className="flex items-center justify-center space-x-1.5 text-[10px] font-mono uppercase text-slate-500 mb-1">
-            <Layers className="w-3 h-3 text-indigo-400" />
-            <span>REMAINING</span>
-          </div>
-          <p className="text-2xl font-black text-white font-mono">
-            {remainingTasks.length} OBJECTIVES
-          </p>
+        <div>
+          <span className="text-[10px] text-slate-500 uppercase tracking-widest block mb-1">REMAINING</span>
+          <span className="text-2xl sm:text-3xl font-black text-slate-400">{remainingTasks.length} OBJ</span>
         </div>
       </div>
 
-      {/* Completed Objectives Log */}
-      <div className="surface-obsidian p-5 rounded-2xl border-white/[0.06] mb-6 text-left">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block mb-3">
-          EXECUTED IN THIS SPRINT
+      {/* Executed Sequence Log */}
+      <div className="mb-10 text-left">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block mb-4">
+          EXECUTED OBJECTIVES
         </span>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {completedTasks.length > 0 ? (
-            completedTasks.map((t) => (
+            completedTasks.map((t, idx) => (
               <div
                 key={t.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-obsidian-900 border border-white/[0.04]"
+                className="flex items-center justify-between py-2 border-b border-white/[0.04]"
               >
                 <div className="flex items-center space-x-3">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <div>
-                    <span className="text-sm font-semibold text-white uppercase font-mono">{t.title}</span>
-                    {t.subtitle && (
-                      <p className="text-xs text-slate-400 font-light">{t.subtitle}</p>
-                    )}
-                  </div>
+                  <span className="text-sm font-semibold text-white uppercase font-mono">{t.title}</span>
                 </div>
-                <span className="text-xs font-mono text-slate-400 px-2 py-0.5 rounded bg-white/[0.04]">
+                <span className="text-xs font-mono text-slate-400">
                   {t.duration} MIN
                 </span>
               </div>
@@ -131,12 +103,12 @@ export function SessionSummary({
         </div>
       </div>
 
-      {/* NEXORA Next Recommendation Box */}
-      <div className="surface-obsidian p-5 rounded-2xl border-brand-cyan/25 bg-gradient-to-r from-brand-cyan/[0.03] to-brand-indigo/[0.03] mb-8 text-left">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-brand-cyan block mb-2">
+      {/* NEXORA Next Move Recommendation */}
+      <div className="p-6 rounded-2xl surface-obsidian border-brand-cyan/20 mb-10 text-left">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-brand-cyan block mb-2 font-bold">
           YOUR NEXT MOVE
         </span>
-        <p className="text-sm text-slate-200 leading-relaxed font-light">
+        <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-light">
           {getSmartRecommendation()}
         </p>
       </div>
@@ -145,7 +117,7 @@ export function SessionSummary({
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
         <button
           onClick={onReturnToCommand}
-          className="w-full sm:w-auto px-6 py-3 rounded-xl font-mono font-bold text-xs tracking-wider bg-brand-cyan hover:bg-sky-400 text-slate-950 flex items-center justify-center space-x-2 shadow-telemetry transition duration-200"
+          className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-mono font-bold text-xs tracking-wider bg-brand-cyan hover:bg-sky-400 text-slate-950 flex items-center justify-center space-x-2 shadow-telemetry transition duration-200"
         >
           <span>RETURN TO NEXORA</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -154,7 +126,7 @@ export function SessionSummary({
         {remainingTasks.length > 0 && (
           <button
             onClick={() => onContinuePlan(remainingTasks[0].id)}
-            className="w-full sm:w-auto px-5 py-3 rounded-xl font-mono text-xs tracking-wider surface-interactive text-slate-300 hover:text-white flex items-center justify-center space-x-2 transition"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-mono text-xs tracking-wider text-slate-300 hover:text-white border border-white/[0.08] hover:border-white/20 transition flex items-center justify-center space-x-2"
           >
             <span>NEXT: {remainingTasks[0].title}</span>
           </button>
@@ -162,7 +134,7 @@ export function SessionSummary({
 
         <button
           onClick={onResetSession}
-          className="w-full sm:w-auto px-4 py-3 rounded-xl font-mono text-xs text-slate-500 hover:text-slate-300 flex items-center justify-center space-x-1.5 transition"
+          className="w-full sm:w-auto px-4 py-2.5 rounded-xl font-mono text-xs text-slate-500 hover:text-slate-300 transition flex items-center justify-center space-x-1.5"
         >
           <RotateCcw className="w-3 h-3" />
           <span>NEW SESSION</span>

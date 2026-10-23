@@ -452,26 +452,16 @@ export default function NexoraApp() {
               completedCount={session.completedTaskIds.length}
             />
 
-            {/* Quick Status Pill for Active Plan in Memory */}
+            {/* Minimal Inline Link to Active Plan */}
             {session.plan && (
-              <div className="max-w-3xl mx-auto px-4 mt-6">
-                <div className="surface-obsidian p-4 rounded-xl border-white/[0.06] flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-brand-cyan block">
-                      ACTIVE PLAN IN MEMORY
-                    </span>
-                    <p className="text-xs sm:text-sm font-semibold text-white font-mono uppercase mt-0.5">
-                      {session.plan.tasks.length} OBJECTIVES &bull; {session.plan.totalMinutes} MIN &bull;{" "}
-                      {session.completedTaskIds.length} EXECUTED
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => switchView("plan")}
-                    className="px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-xs font-mono tracking-wider text-white transition"
-                  >
-                    VIEW PLAN &rarr;
-                  </button>
-                </div>
+              <div className="text-center mt-6">
+                <button
+                  onClick={() => switchView("plan")}
+                  className="inline-flex items-center space-x-1.5 text-[11px] font-mono text-slate-500 hover:text-brand-cyan transition tracking-widest uppercase"
+                >
+                  <span>ACTIVE STRATEGY: {session.plan.tasks.length} OBJECTIVES &bull; {session.plan.totalMinutes} MIN</span>
+                  <span className="text-brand-cyan">&rarr;</span>
+                </button>
               </div>
             )}
 
